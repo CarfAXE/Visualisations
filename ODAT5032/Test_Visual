@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hierarchical Interactive Graph View</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Inter", sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .main-wrapper {
+            display: flex;
+            flex-direction: column; /* Stack on small screens */
+            width: 95%;
+            max-width: 1200px; /* Overall max width for the combined layout */
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden; /* For rounded corners */
+            margin: 20px auto; /* Add margin to center it and prevent it from hugging Canvas edges */
+        }
+
+        @media (min-width: 768px) {
+            .main-wrapper {
+                flex-direction: row; /* Side-by-side on larger screens */
+                height: 70vh; /* Fixed height for consistent layout on desktop */
+            }
+        }
+
+        .graph-container {
+            flex-grow: 1; /* Takes available space */
+            aspect-ratio: 16 / 9; /* Maintain aspect ratio on smaller screens */
+            position: relative;
+            overflow: hidden;
+        }
+        @media (min-width: 768px) {
+            .graph-container {
+                aspect-ratio: auto; /* Let height be determined by flex container */
+                height: 100%; /* Fill height of main-wrapper */
+            }
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .links line {
+            stroke: #ccc; /* Default link color */
+            stroke-opacity: 0.6;
+            stroke-width: 1.5px;
+            transition: stroke-width 0.2s ease, stroke 0.2s ease, stroke-opacity 0.2s ease;
+        }
+        .links line.hover-active {
+            stroke: #333; /* Highlighted link color on hover */
+            stroke-width: 2.5px;
+            stroke-opacity: 1;
+        }
+        .links line.faded {
+            stroke-opacity: 0.1; /* Faded link opacity */
+            stroke: #eee; /* Lighter color when faded */
+        }
+        .nodes circle {
+            stroke: #fff;
+            stroke-width: 1.5px;
+            cursor: grab;
+            transition: stroke-width 0.2s ease, fill 0.2s ease, opacity 0.2s ease;
+        }
+        .nodes circle:hover {
+            stroke-width: 3px;
+        }
+        .nodes circle.hover-active {
+            stroke: #3498db; /* Highlighted node stroke on hover */
+            stroke-width: 3px;
+            opacity: 1;
+        }
+        .nodes circle.selected-node {
+            stroke: #e67e22; /* Distinct color for selected node */
+            stroke-width: 4px;
+            opacity: 1;
+        }
+        .nodes circle.faded {
+            opacity: 0.2; /* Faded node opacity */
+        }
+        /* Central node specific styling */
+        .nodes circle.central-node {
+            r: 15px; /* Smaller radius for central node */
+            fill: #007bff; /* Distinct color for central node */
+            stroke: #0056b3;
+            stroke-width: 3px;
+        }
+        /* Ensure central node isn't faded by default */
+        .nodes circle.central-node.faded {
+            opacity: 1; /* Central node never fades completely */
+            stroke-opacity: 1;
+        }
+        /* Ensure central node's text isn't faded by default */
+        .nodes text.central-node.faded {
+            opacity: 1;
+        }
+
+        .nodes text {
+            font-size: 12px; /* Labels a bit bigger */
+            fill: #333;
+            pointer-events: none;
+            text-anchor: middle;
+            dominant-baseline: central;
+            opacity: 1; /* Labels always visible by default */
+            transition: opacity 0.2s ease;
+        }
+        .nodes text.hover-active {
+            opacity: 1; /* Ensure active labels are fully visible */
+        }
+        .nodes text.selected-node {
+            opacity: 1; /* Ensure its text is fully visible */
+        }
+        .nodes text.faded {
+            opacity: 0.2; /* Faded text opacity */
+        }
+        /* Style for the main group that gets transformed by zoom */
+        .graph-group {
+            transform-origin: center center;
+        }
+
+        /* Color palette for nodes */
+        .node-type-1 { fill: #66c2a5; } /* Greenish */
+        .node-type-2 { fill: #fc8d62; } /* Orangish */
+        .node-type-3 { fill: #8da0cb; } /* Purplish */
+        .node-type-4 { fill: #e78ac3; } /* Pinkish */
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 100%; /* Full width on small screens */
+            padding: 20px;
+            box-sizing: border-box;
+            border-top: 1px solid #eee; /* Separator on small screens */
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        @media (min-width: 768px) {
+            .sidebar {
+                width: 300px; /* Fixed width on larger screens */
+                flex-shrink: 0; /* Prevent shrinking */
+                border-top: none;
+                border-left: 1px solid #eee; /* Separator on larger screens */
+            }
+        }
+        .sidebar h3 {
+            margin-top: 0;
+            color: #333;
+            font-size: 1.2em;
+            margin-bottom: 0;
+        }
+        .sidebar p {
+            font-size: 0.9em;
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 0;
+        }
+        .sidebar strong {
+            color: #222;
+        }
+        .sidebar .link-button {
+            display: none;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .sidebar .link-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="graph-container">
+            <svg></svg>
+        </div>
+        <div class="sidebar">
+            <h3 id="sidebarTitle">Node Information</h3>
+            <p id="sidebarContent">Click on a node in the graph to display its details here.</p>
+            <a href="#" id="nodeLinkButton" class="link-button" target="_blank">Go to Link</a>
+        </div>
+    </div>
+
+    <script>
+        // Graph data with descriptions and URLs
+        const graphData = {
+            nodes: [
+                { id: "Module Intro", group: 1, name: "Module Introduction", description: "This is the central starting point for the module, outlining key objectives and themes.", isCentral: true },
+                { id: "Concept A", group: 2, name: "Concept A", description: "A foundational concept, building blocks of the subject.", url: "https://en.wikipedia.org/wiki/Concept" },
+                { id: "Concept B", group: 2, name: "Concept B", description: "Advanced theories and applications derived from Concept A." },
+                { id: "Topic 1", group: 3, name: "Topic 1", description: "Practical methodologies and examples within a specific area.", url: "https://en.wikipedia.org/wiki/Topic" },
+                { id: "Topic 2", group: 3, name: "Topic 2", description: "Historical context and evolution of ideas in another distinct topic." },
+                { id: "Detail X", group: 4, name: "Detail X", description: "In-depth look at a particular sub-component or technique within Topic 1." },
+                { id: "Detail Y", group: 4, name: "Detail Y", description: "Nuances and challenges associated with Topic 2's implementation." },
+                { id: "Assessment", group: 1, name: "Assessment", description: "Evaluates understanding of all preceding concepts and topics.", url: "https://en.wikipedia.org/wiki/Assessment" },
+                { id: "Summary", group: 2, name: "Summary", description: "Concise recap of key takeaways and connections." },
+                { id: "Further Reading", group: 3, name: "Further Reading", description: "Additional resources for deeper exploration.", url: "https://en.wikipedia.org/wiki/Further_reading" }
+            ],
+            links: [
+                // All nodes connect to the central "Module Intro"
+                { source: "Module Intro", target: "Concept A" },
+                { source: "Module Intro", target: "Concept B" },
+                { source: "Module Intro", target: "Topic 1" },
+                { source: "Module Intro", target: "Topic 2" },
+                { source: "Module Intro", target: "Assessment" },
+                { source: "Module Intro", target: "Summary" },
+                { source: "Module Intro", target: "Further Reading" },
+
+                // Selective connections between other nodes
+                { source: "Concept A", target: "Topic 1" },
+                { source: "Concept A", target: "Topic 2" },
+                { source: "Concept B", target: "Topic 1" },
+                { source: "Topic 1", target: "Detail X" },
+                { source: "Topic 2", target: "Detail Y" },
+                { source: "Detail X", target: "Assessment" },
+                { source: "Detail Y", target: "Assessment" },
+                { source: "Assessment", target: "Summary" },
+                { source: "Summary", target: "Further Reading" }
+            ]
+        };
+
+        const svg = d3.select("svg");
+        const container = d3.select(".graph-container");
+        let g; // Main group for graph elements to be transformed by zoom
+        let linkElements, nodeElements, textElements; // D3 selections
+        let zoomBehavior; // D3 zoom behavior instance
+        let simulation; // Declare simulation globally
+
+        let currentSelectedNode = null; // Global variable to track the currently selected node
+        const centralNode = graphData.nodes.find(node => node.isCentral); // Find the central node
+
+        // Sidebar elements
+        const sidebarTitle = document.getElementById('sidebarTitle');
+        const sidebarContent = document.getElementById('sidebarContent');
+        const nodeLinkButton = document.getElementById('nodeLinkButton');
+
+        // Create a map for quick lookup of connected nodes/links
+        const linkedByIndex = {};
+        graphData.links.forEach(d => {
+            linkedByIndex[`${d.source.id || d.source},${d.target.id || d.target}`] = true;
+            linkedByIndex[`${d.target.id || d.target},${d.source.id || d.source}`] = true;
+        });
+
+        function isConnected(a, b) {
+            if (!a || !b) return false;
+            return linkedByIndex[`${a.id},${b.id}`] || a.id === b.id;
+        }
+
+        function updateGraphDimensions() {
+            const width = container.node().clientWidth;
+            const height = container.node().clientHeight;
+
+            svg.selectAll("*").remove(); // Clear existing elements
+
+            // Initialize zoom behavior
+            zoomBehavior = d3.zoom()
+                .scaleExtent([0.1, 8]) // Allow zooming from 10% to 800%
+                .on("zoom", (event) => {
+                    g.attr("transform", event.transform); // Apply zoom transform to the main group
+                });
+
+            // Apply zoom behavior to the SVG
+            svg.call(zoomBehavior);
+
+            // Create a main group to hold all graph elements, which will be transformed by zoom
+            g = svg.append("g").attr("class", "graph-group");
+
+            simulation = d3.forceSimulation(graphData.nodes)
+                .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(100))
+                .force("charge", d3.forceManyBody().strength(-300))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("collide", d3.forceCollide(25))
+                .alphaTarget(0.05); // Start with subtle movement
+
+            linkElements = g.append("g") // Append links to the main group 'g'
+                .attr("class", "links")
+                .selectAll("line")
+                .data(graphData.links)
+                .join("line");
+
+            nodeElements = g.append("g") // Append nodes to the main group 'g'
+                .attr("class", "nodes")
+                .selectAll("g")
+                .data(graphData.nodes)
+                .join("g")
+                .call(drag(simulation))
+                .on("mouseover", mouseoverNode)
+                .on("mouseout", mouseoutNode)
+                .on("click", clickNode); // Add click event listener
+
+            nodeElements.append("circle")
+                .attr("r", d => d.isCentral ? 15 : 10) // Central node radius 15, others 10
+                .attr("class", d => `node-type-${d.group} ${d.isCentral ? 'central-node' : ''}`);
+
+            textElements = nodeElements.append("text")
+                .text(d => d.name)
+                .attr("x", 0)
+                .attr("y", d => d.isCentral ? 23 : 20); // Adjusted text position for central node
+
+            simulation.on("tick", () => {
+                linkElements
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+
+                nodeElements
+                    .attr("transform", d => `translate(${d.x},${d.y})`);
+            });
+
+            // Drag functionality
+            function drag(simulation) {
+                function dragstarted(event, d) {
+                    if (!event.active) simulation.alphaTarget(0.3).restart(); // Briefly increase alpha for better dragging response
+                    d.fx = d.x;
+                    d.fy = d.y;
+                }
+
+                function dragged(event, d) {
+                    d.fx = event.x;
+                    d.fy = event.y;
+                }
+
+                function dragended(event, d) {
+                    if (!event.active) simulation.alphaTarget(0.05); // Return to subtle movement after drag
+                    // If a node is selected, keep its fx/fy fixed, otherwise null them
+                    if (currentSelectedNode !== d) { // Only null if not the currently selected node
+                        d.fx = null;
+                        d.fy = null;
+                    }
+                }
+
+                return d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended);
+            }
+
+            // --- Node Hover (mouseover/mouseout) Logic ---
+            function mouseoverNode(event, d) {
+                // Apply 'hover-active' to hovered node and its direct connections
+                d3.select(this).select("circle").classed("hover-active", true);
+                d3.select(this).select("text").classed("hover-active", true);
+
+                nodeElements.each(function(o) {
+                    if (isConnected(d, o)) {
+                        d3.select(this).select("circle").classed("hover-active", true);
+                        d3.select(this).select("text").classed("hover-active", true);
+                    }
+                });
+
+                linkElements.each(function(l) {
+                    if (l.source.id === d.id || l.target.id === d.id) {
+                        d3.select(this).classed("hover-active", true);
+                    }
+                });
+
+                // Apply faded class to elements that are not hover-active AND not the selected node or its connections
+                nodeElements.select("circle").classed("faded", function(o) {
+                    const isCurrentlyHoverActive = d3.select(this).classed("hover-active");
+                    const isSelectedAndConnected = currentSelectedNode && (o.id === currentSelectedNode.id || isConnected(currentSelectedNode, o));
+                    const isCentralOrConnectedToCentral = o.isCentral || (centralNode && isConnected(centralNode, o));
+                    return !isCurrentlyHoverActive && !isSelectedAndConnected && !isCentralOrConnectedToCentral;
+                });
+                nodeElements.select("text").classed("faded", function(o) {
+                    const isCurrentlyHoverActive = d3.select(this).classed("hover-active");
+                    const isSelectedAndConnected = currentSelectedNode && (o.id === currentSelectedNode.id || isConnected(currentSelectedNode, o));
+                    const isCentralOrConnectedToCentral = o.isCentral || (centralNode && isConnected(centralNode, o));
+                    return !isCurrentlyHoverActive && !isSelectedAndConnected && !isCentralOrConnectedToCentral;
+                });
+                linkElements.classed("faded", function(l) {
+                    const isCurrentlyHoverActive = d3.select(this).classed("hover-active");
+                    const isConnectedToSelected = currentSelectedNode && (l.source.id === currentSelectedNode.id || l.target.id === currentSelectedNode.id);
+                    const isConnectedToCentral = centralNode && (l.source.id === centralNode.id || l.target.id === centralNode.id);
+                    return !isCurrentlyHoverActive && !isConnectedToSelected && !isConnectedToCentral;
+                });
+            }
+
+            function mouseoutNode() {
+                // Remove all 'hover-active' classes
+                nodeElements.select("circle").classed("hover-active", false);
+                nodeElements.select("text").classed("hover-active", false);
+                linkElements.classed("hover-active", false);
+
+                // Re-evaluate 'faded' state based on selection or default (central prominence)
+                if (currentSelectedNode) {
+                    // If a node is selected, fade everything EXCEPT the selected node and its connections
+                    nodeElements.select("circle").classed("faded", o => o.id !== currentSelectedNode.id && !isConnected(currentSelectedNode, o));
+                    nodeElements.select("text").classed("faded", o => o.id !== currentSelectedNode.id && !isConnected(currentSelectedNode, o));
+                    linkElements.classed("faded", l => !(l.source.id === currentSelectedNode.id || l.target.id === currentSelectedNode.id));
+                } else {
+                    // If no node is selected, return to default state: central node prominent, others not faded
+                    nodeElements.select("circle").classed("faded", o => !o.isCentral && !(centralNode && isConnected(centralNode, o)));
+                    nodeElements.select("text").classed("faded", o => !o.isCentral && !(centralNode && isConnected(centralNode, o)));
+                    linkElements.classed("faded", l => !(centralNode && (l.source.id === centralNode.id || l.target.id === centralNode.id)));
+                }
+            }
+
+            // --- Node Click Logic ---
+            function deselectCurrentNode() {
+                if (currentSelectedNode) {
+                    currentSelectedNode.fx = null;
+                    currentSelectedNode.fy = null;
+                    // Remove 'selected-node' class from the previously selected node
+                    nodeElements.filter(n => n.id === currentSelectedNode.id)
+                                .select("circle").classed("selected-node", false);
+                    nodeElements.filter(n => n.id === currentSelectedNode.id)
+                                .select("text").classed("selected-node", false);
+
+                    currentSelectedNode = null; // Clear the selected node
+                    simulation.alphaTarget(0.05).restart(); // Resume subtle movement for all
+
+                    // Restore default visibility (central node prominent, others not faded)
+                    nodeElements.select("circle").classed("faded", o => !o.isCentral && !(centralNode && isConnected(centralNode, o)));
+                    nodeElements.select("text").classed("faded", o => !o.isCentral && !(centralNode && isConnected(centralNode, o)));
+                    linkElements.classed("faded", l => !(centralNode && (l.source.id === centralNode.id || l.target.id === centralNode.id)));
+
+
+                    // Clear sidebar
+                    sidebarTitle.textContent = "Node Information";
+                    sidebarContent.innerHTML = "Click on a node in the graph to display its details here.";
+                    nodeLinkButton.style.display = 'none';
+                }
+
+                // Zoom to fit all nodes in the window
+                zoomToFitAllNodes();
+            }
+
+            function clickNode(event, d) {
+                // Prevent event from bubbling up to SVG click handler
+                event.stopPropagation();
+
+                const width = container.node().clientWidth;
+                const height = container.node().clientHeight;
+
+                if (currentSelectedNode === d) { // Clicked the same node again, deselect
+                    deselectCurrentNode();
+                } else { // Clicked a new node
+                    // Deselect any previously selected node
+                    deselectCurrentNode(); // This will clear old selection and restore default visibility
+
+                    d.fx = d.x; // Fix the new node
+                    d.fy = d.y;
+                    currentSelectedNode = d;
+                    simulation.alphaTarget(0.05).restart(); // Keep simulation running for surrounding nodes
+
+                    // Apply 'selected-node' class to the newly selected node
+                    d3.select(event.currentTarget).select("circle").classed("selected-node", true);
+                    d3.select(event.currentTarget).select("text").classed("selected-node", true);
+
+                    // Ensure selected node and its direct connections are not faded, and others are faded
+                    nodeElements.select("circle").classed("faded", o => o.id !== currentSelectedNode.id && !isConnected(currentSelectedNode, o));
+                    nodeElements.select("text").classed("faded", o => o.id !== currentSelectedNode.id && !isConnected(currentSelectedNode, o));
+                    linkElements.classed("faded", l => !(l.source.id === currentSelectedNode.id || l.target.id === currentSelectedNode.id));
+
+                    // Center the clicked node
+                    const currentTransform = d3.zoomTransform(svg.node());
+                    const newTransform = d3.zoomIdentity
+                        .translate(width / 2, height / 2)
+                        .scale(currentTransform.k)
+                        .translate(-d.x, -d.y);
+
+                    // Apply the new transform with a smooth transition
+                    svg.transition().duration(750).call(zoomBehavior.transform, newTransform);
+
+                    // Update sidebar content
+                    sidebarTitle.textContent = d.name;
+                    sidebarContent.innerHTML = `<strong>ID:</strong> ${d.id}<br>
+                                                <strong>Group:</strong> ${d.group}<br><br>
+                                                ${d.description || 'No description available.'}`;
+                    if (d.url) {
+                        nodeLinkButton.href = d.url;
+                        nodeLinkButton.style.display = 'block';
+                    } else {
+                        nodeLinkButton.style.display = 'none';
+                    }
+                }
+            }
+
+            // --- Zoom to Fit All Nodes Function ---
+            function zoomToFitAllNodes() {
+                if (graphData.nodes.length === 0) return; // No nodes to zoom to
+
+                let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+
+                // Find the bounding box of all nodes
+                graphData.nodes.forEach(node => {
+                    minX = Math.min(minX, node.x);
+                    maxX = Math.max(maxX, node.x);
+                    minY = Math.min(minY, node.y);
+                    maxY = Math.max(maxY, node.y);
+                });
+
+                const graphWidth = maxX - minX;
+                const graphHeight = maxY - minY;
+
+                const containerWidth = container.node().clientWidth;
+                const containerHeight = container.node().clientHeight;
+
+                // Add some padding around the graph
+                const padding = 50; // pixels
+                const scaleX = (containerWidth - 2 * padding) / graphWidth;
+                const scaleY = (containerHeight - 2 * padding) / graphHeight;
+                const scale = Math.min(scaleX, scaleY, 1); // Max scale of 1 to prevent excessive zoom on small graphs
+
+                // Calculate translation to center
+                const translateX = containerWidth / 2 - (minX + maxX) / 2 * scale;
+                const translateY = containerHeight / 2 - (minY + maxY) / 2 * scale;
+
+                const newTransform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
+
+                svg.transition().duration(750).call(zoomBehavior.transform, newTransform);
+            }
+
+
+            // --- SVG Background Click to Deselect ---
+            svg.on("click", function(event) {
+                // Check if the click target is the SVG itself (not a node or link)
+                if (event.target === this) {
+                    deselectCurrentNode();
+                }
+            });
+        }
+
+        // Initial graph rendering
+        updateGraphDimensions();
+        // Update graph on window resize
+        window.addEventListener('resize', updateGraphDimensions);
+    </script>
+</body>
+</html>
