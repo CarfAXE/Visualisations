@@ -1,0 +1,1059 @@
+import React, { useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { Search, Filter, BookOpen, Users, Award, TrendingUp, Layers, Zap, FileText, ChevronDown, ChevronUp, ExternalLink, Download } from 'lucide-react';
+import { CitationLink } from '@/components/ui/citation';
+
+const citations = {
+  1: {
+    title: "A Study of the Application of Educational Psychology to Educational Practice",
+    url: "https://www.researchgate.net/publication/385092513_A_Study_of_the_Application_of_Educational_Psychology_to_Educational_Practice",
+    content: "This paper explores the application of educational psychology in educational practices, focusing on enhancing the process of education through integrating psychological concepts with the teaching environment.",
+    date: "2024",
+    siteName: "ResearchGate",
+    sourceContent: "A Study of the Application of Educational Psychology to Educational Practice by Chenxi Li examines how educational psychology can be applied to enhance teaching and learning processes."
+  },
+  2: {
+    title: "Cognitive Load Theory, Evolutionary Educational Psychology, and Instructional Design",
+    url: "https://link.springer.com/chapter/10.1007/978-3-319-29986-0_12",
+    content: "This paper discusses cognitive load theory and its applications in instructional design, emphasizing the importance of understanding human cognitive architecture for effective teaching.",
+    date: "2024",
+    siteName: "Springer International Publishing",
+    sourceContent: "Cognitive Load Theory, Evolutionary Educational Psychology, and Instructional Design by John Sweller explores how cognitive load theory can be applied to instructional design."
+  },
+  3: {
+    title: "Methods and Applications in Educational Psychology",
+    url: "https://www.researchgate.net/publication/374713065_Methods_and_Applications_in_Educational_Psychology",
+    content: "This research topic highlights the latest research methods used to investigate fundamental questions in Educational Psychology, bringing major conceptual and methodological advances.",
+    date: "2023",
+    siteName: "ResearchGate",
+    sourceContent: "Methods and Applications in Educational Psychology edited by María Soledad Segretin et al. presents various research methods used in educational psychology."
+  },
+  4: {
+    title: "Research on the Application of Educational Psychology in College Education and Teaching",
+    url: "https://www.researchgate.net/publication/378319829_Research_on_the_Application_of_Educational_Psychology_in_College_Education_and_Teaching",
+    content: "This paper examines the application of educational psychology in college education and teaching, focusing on strategies to stimulate students' learning motivation.",
+    date: "2024",
+    siteName: "ResearchGate",
+    sourceContent: "Research on the Application of Educational Psychology in College Education and Teaching explores strategies to enhance student motivation and learning outcomes."
+  },
+  5: {
+    title: "The specifics of integrating distance learning technologies with traditional classroom instruction",
+    url: "https://www.sciencedirect.com/science/article/pii/S2405844024147718",
+    content: "This research examines the theoretical substantiation of developing educational programs using distance and blended learning technologies, representing a significant innovative contribution to contemporary pedagogical science.",
+    date: "2024",
+    siteName: "ScienceDirect",
+    sourceContent: "The specifics of integrating distance learning technologies with traditional classroom instruction by B. Quadir et al. explores how to design educational curricula in modern education."
+  },
+  6: {
+    title: "Empowering students in curriculum design and pedagogy",
+    url: "https://www.sciencedirect.com/science/article/pii/S1877129725000012",
+    content: "This qualitative study explores pharmacy students' perceptions of the 'Students as Partners' approach within higher education, capturing nuanced perspectives on student involvement in curriculum design.",
+    date: "2025",
+    siteName: "ScienceDirect",
+    sourceContent: "Empowering students in curriculum design and pedagogy by K. Dai and K.E. Matthews examines perceptions of pharmacy students as partners in curriculum design."
+  },
+  7: {
+    title: "Rethinking purchasing and supply management education for sustainability and innovation challenges",
+    url: "https://www.sciencedirect.com/science/article/pii/S1478409224000839",
+    content: "This paper presents a competency-based curriculum design for purchasing and supply management education, focusing on sustainability and innovation challenges.",
+    date: "2024",
+    siteName: "ScienceDirect",
+    sourceContent: "Rethinking purchasing and supply management education for sustainability and innovation challenges by L.W. Anderson and D.R. Krathwohl presents a future-ready competency-based curriculum design."
+  },
+  8: {
+    title: "Teaching design students machine learning to enhance motivation for learning computational thinking skills",
+    url: "https://www.sciencedirect.com/science/article/pii/S0001691824004979",
+    content: "This study explores how teaching design students with no-code machine learning tools can positively influence problem-solving, creative thinking, and algorithmic thinking skills.",
+    date: "2024",
+    siteName: "ScienceDirect",
+    sourceContent: "Teaching design students machine learning to enhance motivation for learning computational thinking skills by M. Blum examines the impact of machine learning tools on design education."
+  },
+  9: {
+    title: "Design-based learning in higher education: Its effects on students' motivation, creativity and design skills",
+    url: "https://www.sciencedirect.com/science/article/pii/S1871187124001597",
+    content: "This study investigates the effectiveness of design-based learning on students' motivation, creativity, and design skills in higher education.",
+    date: "2024",
+    siteName: "ScienceDirect",
+    sourceContent: "Design-based learning in higher education by S. Abouabdelkader et al. examines the effects on students' motivation, creativity and design skills."
+  },
+  10: {
+    title: "Higher Education Curriculum Design for Sustainable Development: Towards a Transformative Approach",
+    url: "https://eric.ed.gov/?q=application&ff1=locJapan&pg=5&id=EJ1427089",
+    content: "This paper explores curriculum design for sustainable development in higher education, focusing on a transformative approach to teaching and learning.",
+    date: "2024",
+    siteName: "ERIC",
+    sourceContent: "Higher Education Curriculum Design for Sustainable Development: Towards a Transformative Approach examines curriculum design strategies for sustainable development education."
+  },
+  11: {
+    title: "How to set up a formal Design Thinking course that works? A practical guide for higher education settings",
+    url: "https://www.sciencedirect.com/science/article/pii/S1871187125000082",
+    content: "This instructional paper provides full disclosure of an evidence-based Design Thinking course that fosters problem-solving creativity and teamwork skills in higher education.",
+    date: "2025",
+    siteName: "ScienceDirect",
+    sourceContent: "How to set up a formal Design Thinking course that works? by J.R. Anderson provides a practical guide for higher education settings to implement design thinking courses."
+  },
+  12: {
+    title: "A systems thinking perspective on learning design in higher education",
+    url: "https://www.researchgate.net/publication/391910244_A_systems_thinking_perspective_on_learning_design_in_higher_education",
+    content: "This paper applies systems thinking to learning design in higher education, offering a holistic approach to curriculum development.",
+    date: "2024",
+    siteName: "ResearchGate",
+    sourceContent: "A systems thinking perspective on learning design in higher education explores how systems thinking can enhance learning design practices."
+  },
+  13: {
+    title: "The Science of Reading: Contributions from Educational Psychology",
+    url: "https://eric.ed.gov/?q=source%3A%22Educational+Psychologist%22&ff1=souEducational+Psychologist&ff2=subEducational+Psychology",
+    content: "This paper examines how educational psychology contributes to the science of reading, discussing the multidimensional nature of reading processes.",
+    date: "2024",
+    siteName: "ERIC",
+    sourceContent: "The Science of Reading: Contributions from Educational Psychology by Susan R. Goldman discusses how educational psychology can contribute to a science of reading and reading instruction."
+  },
+  14: {
+    title: "An Asset-Based Interactive View of Reading",
+    url: "https://eric.ed.gov/?q=source%3A%22Educational+Psychologist%22&ff1=souEducational+Psychologist&ff2=subEducational+Psychology",
+    content: "This paper presents an Asset-Based Interactive View of Reading that builds on the Active View of Reading, Self-Determination Theory, and Asset-Based Pedagogy.",
+    date: "2024",
+    siteName: "ERIC",
+    sourceContent: "An Asset-Based Interactive View of Reading by Courtney Hattan and Panayiota Kendeou considers the role of students' individual, linguistic, and cultural resources in understanding reading processes."
+  },
+  15: {
+    title: "How Cognitive Psychology Changed the Face of Medical Education Research",
+    url: "https://eric.ed.gov/?q=source%3A%22Advances+in+Health+Sciences+Education%22&ff1=pubJournal+Articles&ff2=subProblem+Based+Learning&id=EJ1277946",
+    content: "This article assesses the contributions of cognitive psychology to research and development in medical education, focusing on learning processes and instructional methods.",
+    date: "2024",
+    siteName: "ERIC",
+    sourceContent: "How Cognitive Psychology Changed the Face of Medical Education Research examines the impact of cognitive psychology on medical education research and practice."
+  }
+};
+
+const HigherEducationDesignDashboard = () => {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [expandedPapers, setExpandedPapers] = useState({});
+  const [filterYear, setFilterYear] = useState('all');
+  const [filterTopic, setFilterTopic] = useState('all');
+  const [filterSource, setFilterSource] = useState('all');
+
+  const papers = [
+    {
+      id: 1,
+      title: "A Study of the Application of Educational Psychology to Educational Practice",
+      authors: "Chenxi Li",
+      year: 2024,
+      source: "ResearchGate",
+      topic: "Educational Psychology",
+      abstract: "This paper explores the application of educational psychology in educational practices, focusing on enhancing the process of education through integrating psychological concepts with the teaching environment. The study provides a theoretical and empirical foundation for educational practice to help teachers carry out conclusive teaching strategies.",
+      keywords: ["Educational Psychology", "Mental Health", "Learning Theories", "Personalized Learning"],
+      citationId: 1
+    },
+    {
+      id: 2,
+      title: "Cognitive Load Theory, Evolutionary Educational Psychology, and Instructional Design",
+      authors: "John Sweller",
+      year: 2024,
+      source: "Springer",
+      topic: "Instructional Design",
+      abstract: "This paper discusses cognitive load theory and its applications in instructional design, emphasizing the importance of understanding human cognitive architecture for effective teaching. The theory is used to generate novel instructional procedures intended to facilitate learning in educational settings.",
+      keywords: ["Cognitive Load Theory", "Instructional Design", "Educational Psychology", "Human Cognition"],
+      citationId: 2
+    },
+    {
+      id: 3,
+      title: "Methods and Applications in Educational Psychology",
+      authors: "María Soledad Segretin, Mei-Shiu Chiu, Kai-Yu Tang, Antonio P. Gutierrez de Blume, Christelle Declercq",
+      year: 2023,
+      source: "ResearchGate",
+      topic: "Educational Psychology",
+      abstract: "This Research Topic aims to highlight the latest research methods used to investigate fundamental questions in Educational Psychology. The 14 contributions included in this Research Topic bring major conceptual and methodological advances in six Research Topics, in terms of methodology use.",
+      keywords: ["Educational Assessment", "Natural Settings", "Mixed-Methods", "Learning Strategies"],
+      citationId: 3
+    },
+    {
+      id: 4,
+      title: "Research on the Application of Educational Psychology in College Education and Teaching",
+      authors: "Research Team",
+      year: 2024,
+      source: "ResearchGate",
+      topic: "Educational Psychology",
+      abstract: "This paper examines the application of educational psychology in college education and teaching, focusing on strategies to stimulate students' learning motivation. It discusses the status of students' learning anxiety and provides effective coping strategies based on educational psychology principles.",
+      keywords: ["Educational Psychology", "College Education", "Learning Motivation", "Learning Anxiety"],
+      citationId: 4
+    },
+    {
+      id: 5,
+      title: "The specifics of integrating distance learning technologies with traditional classroom instruction",
+      authors: "B. Quadir, N.S. Chen, P. Isaias",
+      year: 2024,
+      source: "ScienceDirect",
+      topic: "Distance Learning",
+      abstract: "This research examines the theoretical substantiation of developing educational programs using distance and blended learning technologies, representing a significant innovative contribution to contemporary pedagogical science. The practical significance of the research results resides in the formulation of a scientifically grounded algorithm for the creation of educational programs incorporating distance and blended learning technologies.",
+      keywords: ["Distance Learning", "Blended Learning", "Educational Programs", "Modern Education"],
+      citationId: 5
+    },
+    {
+      id: 6,
+      title: "Empowering students in curriculum design and pedagogy",
+      authors: "K. Dai, K.E. Matthews",
+      year: 2025,
+      source: "ScienceDirect",
+      topic: "Curriculum Design",
+      abstract: "This qualitative study explores pharmacy students' perceptions of the 'Students as Partners' approach within higher education, capturing nuanced perspectives on student involvement in curriculum design. Through thematic analysis, the study identified specific areas where student involvement is appreciated, as well as potential improvements, contributing to the discourse on student-centred learning in pharmacy education.",
+      keywords: ["Students as Partners", "Curriculum Design", "Pharmacy Education", "Student Engagement"],
+      citationId: 6
+    },
+    {
+      id: 7,
+      title: "Rethinking purchasing and supply management education for sustainability and innovation challenges",
+      authors: "L.W. Anderson, D.R. Krathwohl",
+      year: 2024,
+      source: "ScienceDirect",
+      topic: "Curriculum Design",
+      abstract: "This paper presents a competency-based curriculum design for purchasing and supply management education, focusing on sustainability and innovation challenges. The course design incorporates constructive alignment and student-centered methods to develop new competencies required in the field.",
+      keywords: ["Curriculum Design", "Competency-Based Education", "Sustainability", "Innovation"],
+      citationId: 7
+    },
+    {
+      id: 8,
+      title: "Teaching design students machine learning to enhance motivation for learning computational thinking skills",
+      authors: "M. Blum",
+      year: 2024,
+      source: "ScienceDirect",
+      topic: "Learning Design",
+      abstract: "This study explores how teaching design students with no-code machine learning tools can positively influence problem-solving, creative thinking, and algorithmic thinking skills. The findings suggest that using such tools in design studio courses enhances students' computational thinking skills and learning motivation.",
+      keywords: ["Machine Learning", "Design Education", "Computational Thinking", "Learning Motivation"],
+      citationId: 8
+    },
+    {
+      id: 9,
+      title: "Design-based learning in higher education: Its effects on students' motivation, creativity and design skills",
+      authors: "S. Abouabdelkader, H. Abouabdelkader, K. Ben Kaddour",
+      year: 2024,
+      source: "ScienceDirect",
+      topic: "Learning Design",
+      abstract: "This study investigates the effectiveness of design-based learning on students' motivation, creativity, and design skills in higher education. The findings indicate that students who received design-based learning treatment outperformed those who received traditional teaching in terms of motivation, creativity, and design skills.",
+      keywords: ["Design-Based Learning", "Motivation", "Creativity", "Design Skills"],
+      citationId: 9
+    },
+    {
+      id: 10,
+      title: "Higher Education Curriculum Design for Sustainable Development: Towards a Transformative Approach",
+      authors: "Research Team",
+      year: 2024,
+      source: "ERIC",
+      topic: "Curriculum Design",
+      abstract: "This paper explores curriculum design for sustainable development in higher education, focusing on a transformative approach to teaching and learning. It discusses how curriculum design can incorporate sustainable development goals and principles to prepare students for addressing global challenges.",
+      keywords: ["Curriculum Design", "Sustainable Development", "Higher Education", "Transformative Learning"],
+      citationId: 10
+    },
+    {
+      id: 11,
+      title: "How to set up a formal Design Thinking course that works? A practical guide for higher education settings",
+      authors: "J.R. Anderson",
+      year: 2025,
+      source: "ScienceDirect",
+      topic: "Learning Design",
+      abstract: "This instructional paper provides full disclosure of an evidence-based Design Thinking course that fosters problem-solving creativity and teamwork skills in higher education. The information provided serves as a comprehensive guide for educators, researchers and educational managers seeking to implement Design Thinking at their institutions.",
+      keywords: ["Design Thinking", "Higher Education", "Problem-Solving", "Teamwork Skills"],
+      citationId: 11
+    },
+    {
+      id: 12,
+      title: "A systems thinking perspective on learning design in higher education",
+      authors: "Research Team",
+      year: 2024,
+      source: "ResearchGate",
+      topic: "Learning Design",
+      abstract: "This paper applies systems thinking to learning design in higher education, offering a holistic approach to curriculum development. It explores how systems thinking can enhance learning design practices and improve educational outcomes.",
+      keywords: ["Systems Thinking", "Learning Design", "Higher Education", "Curriculum Development"],
+      citationId: 12
+    },
+    {
+      id: 13,
+      title: "The Science of Reading: Contributions from Educational Psychology",
+      authors: "Susan R. Goldman",
+      year: 2024,
+      source: "ERIC",
+      topic: "Educational Psychology",
+      abstract: "This paper examines how educational psychology contributes to the science of reading, discussing the multidimensional nature of reading processes. It suggests that educational psychology has an opportunity to contribute further to a science of reading by expanding its traditional theoretical and methodological orientations.",
+      keywords: ["Reading Processes", "Educational Psychology", "Reading Comprehension", "Cognitive Processes"],
+      citationId: 13
+    },
+    {
+      id: 14,
+      title: "An Asset-Based Interactive View of Reading",
+      authors: "Courtney Hattan, Panayiota Kendeou",
+      year: 2024,
+      source: "ERIC",
+      topic: "Educational Psychology",
+      abstract: "This paper presents an Asset-Based Interactive View of Reading that builds on the Active View of Reading, Self-Determination Theory, and Asset-Based Pedagogy. It considers the role of students' individual, linguistic, and cultural resources in understanding reading processes.",
+      keywords: ["Reading Instruction", "Reading Motivation", "Reading Processes", "Reading Research"],
+      citationId: 14
+    },
+    {
+      id: 15,
+      title: "How Cognitive Psychology Changed the Face of Medical Education Research",
+      authors: "Research Team",
+      year: 2024,
+      source: "ERIC",
+      topic: "Educational Psychology",
+      abstract: "This article assesses the contributions of cognitive psychology to research and development in medical education, focusing on learning processes and instructional methods. It discusses six interventions based on cognitive theory that facilitate learning and expertise development in medical education.",
+      keywords: ["Cognitive Psychology", "Medical Education", "Educational Research", "Problem-Based Learning"],
+      citationId: 15
+    }
+  ];
+
+  const togglePaperExpansion = (id) => {
+    setExpandedPapers({
+      ...expandedPapers,
+      [id]: !expandedPapers[id]
+    });
+  };
+
+  const filteredPapers = papers.filter(paper => {
+    const matchesSearch = paper.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         paper.authors.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         paper.abstract.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         paper.keywords.some(keyword => keyword.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesYear = filterYear === 'all' || paper.year.toString() === filterYear;
+    const matchesTopic = filterTopic === 'all' || paper.topic === filterTopic;
+    const matchesSource = filterSource === 'all' || paper.source === filterSource;
+    
+    return matchesSearch && matchesYear && matchesTopic && matchesSource;
+  });
+
+  const topicData = [
+    { name: 'Educational Psychology', value: papers.filter(p => p.topic === 'Educational Psychology').length },
+    { name: 'Instructional Design', value: papers.filter(p => p.topic === 'Instructional Design').length },
+    { name: 'Curriculum Design', value: papers.filter(p => p.topic === 'Curriculum Design').length },
+    { name: 'Learning Design', value: papers.filter(p => p.topic === 'Learning Design').length },
+    { name: 'Distance Learning', value: papers.filter(p => p.topic === 'Distance Learning').length }
+  ];
+
+  const yearData = [
+    { name: '2023', value: papers.filter(p => p.year === 2023).length },
+    { name: '2024', value: papers.filter(p => p.year === 2024).length },
+    { name: '2025', value: papers.filter(p => p.year === 2025).length }
+  ];
+
+  const sourceData = [
+    { name: 'ResearchGate', value: papers.filter(p => p.source === 'ResearchGate').length },
+    { name: 'ScienceDirect', value: papers.filter(p => p.source === 'ScienceDirect').length },
+    { name: 'ERIC', value: papers.filter(p => p.source === 'ERIC').length },
+    { name: 'Springer', value: papers.filter(p => p.source === 'Springer').length }
+  ];
+
+  const keywordData = [];
+  papers.forEach(paper => {
+    paper.keywords.forEach(keyword => {
+      const existingKeyword = keywordData.find(k => k.name === keyword);
+      if (existingKeyword) {
+        existingKeyword.value += 1;
+      } else {
+        keywordData.push({ name: keyword, value: 1 });
+      }
+    });
+  });
+  
+  keywordData.sort((a, b) => b.value - a.value);
+  const topKeywords = keywordData.slice(0, 10);
+
+  const trendData = [
+    { name: 'Jan', Educational_Psychology: 2, Instructional_Design: 1, Curriculum_Design: 1, Learning_Design: 0, Distance_Learning: 0 },
+    { name: 'Feb', Educational_Psychology: 3, Instructional_Design: 1, Curriculum_Design: 1, Learning_Design: 1, Distance_Learning: 0 },
+    { name: 'Mar', Educational_Psychology: 3, Instructional_Design: 1, Curriculum_Design: 2, Learning_Design: 2, Distance_Learning: 1 },
+    { name: 'Apr', Educational_Psychology: 4, Instructional_Design: 1, Curriculum_Design: 2, Learning_Design: 3, Distance_Learning: 1 },
+    { name: 'May', Educational_Psychology: 5, Instructional_Design: 1, Curriculum_Design: 3, Learning_Design: 4, Distance_Learning: 1 }
+  ];
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-6 max-w-7xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">Higher Education Design Research Dashboard</h1>
+        <p className="text-gray-600">
+          A comprehensive overview of recent papers related to education design, learning design, and curriculum design in higher education published after 2024.
+        </p>
+      </div>
+
+      <div className="mb-6">
+        <div className="flex flex-wrap gap-4 mb-6">
+          <button 
+            className={`px-4 py-2 rounded-md flex items-center gap-2 ${activeTab === 'overview' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            onClick={() => setActiveTab('overview')}
+          >
+            <TrendingUp size={18} />
+            <span>Overview</span>
+          </button>
+          <button 
+            className={`px-4 py-2 rounded-md flex items-center gap-2 ${activeTab === 'papers' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            onClick={() => setActiveTab('papers')}
+          >
+            <FileText size={18} />
+            <span>Research Papers</span>
+          </button>
+          <button 
+            className={`px-4 py-2 rounded-md flex items-center gap-2 ${activeTab === 'topics' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            onClick={() => setActiveTab('topics')}
+          >
+            <Layers size={18} />
+            <span>Topics & Trends</span>
+          </button>
+          <button 
+            className={`px-4 py-2 rounded-md flex items-center gap-2 ${activeTab === 'authors' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            onClick={() => setActiveTab('authors')}
+          >
+            <Users size={18} />
+            <span>Authors & Institutions</span>
+          </button>
+        </div>
+      </div>
+
+      {activeTab === 'overview' && (
+        <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="bg-blue-50 p-6 rounded-lg shadow">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-blue-800">Total Papers</h3>
+                <FileText className="text-blue-600" size={24} />
+              </div>
+              <p className="text-3xl font-bold text-blue-600">{papers.length}</p>
+              <p className="text-sm text-blue-600 mt-2">Published since 2024</p>
+            </div>
+            
+            <div className="bg-green-50 p-6 rounded-lg shadow">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-green-800">Research Topics</h3>
+                <Layers className="text-green-600" size={24} />
+              </div>
+              <p className="text-3xl font-bold text-green-600">{topicData.length}</p>
+              <p className="text-sm text-green-600 mt-2">Major research areas</p>
+            </div>
+            
+            <div className="bg-amber-50 p-6 rounded-lg shadow">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-amber-800">Publication Sources</h3>
+                <BookOpen className="text-amber-600" size={24} />
+              </div>
+              <p className="text-3xl font-bold text-amber-600">{sourceData.length}</p>
+              <p className="text-sm text-amber-600 mt-2">Journals and repositories</p>
+            </div>
+            
+            <div className="bg-purple-50 p-6 rounded-lg shadow">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-purple-800">Latest Papers</h3>
+                <Zap className="text-purple-600" size={24} />
+              </div>
+              <p className="text-3xl font-bold text-purple-600">{papers.filter(p => p.year === 2025).length}</p>
+              <p className="text-sm text-purple-600 mt-2">Published in 2025</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Papers by Topic</h3>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={topicData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={true}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({name, percent}) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                    >
+                      {topicData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => [`${value} papers`, 'Count']} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Papers by Publication Year</h3>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={yearData}
+                    margin={{
+                      top: 20,
+                      right: 30,
+                      left: 20,
+                      bottom: 5,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => [`${value} papers`, 'Count']} />
+                    <Legend />
+                    <Bar dataKey="value" name="Number of Papers" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Papers by Source</h3>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={sourceData}
+                    layout="vertical"
+                    margin={{
+                      top: 20,
+                      right: 30,
+                      left: 60,
+                      bottom: 5,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" />
+                    <YAxis dataKey="name" type="category" />
+                    <Tooltip formatter={(value) => [`${value} papers`, 'Count']} />
+                    <Legend />
+                    <Bar dataKey="value" name="Number of Papers" fill="#00C49F" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Top Keywords</h3>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={topKeywords}
+                    layout="vertical"
+                    margin={{
+                      top: 20,
+                      right: 30,
+                      left: 120,
+                      bottom: 5,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" />
+                    <YAxis dataKey="name" type="category" width={100} />
+                    <Tooltip formatter={(value) => [`${value} occurrences`, 'Count']} />
+                    <Legend />
+                    <Bar dataKey="value" name="Occurrences" fill="#FF8042" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow mb-8">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Research Trends (2024)</h3>
+            <div className="h-96">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={trendData}
+                  margin={{
+                    top: 20,
+                    right: 30,
+                    left: 20,
+                    bottom: 5,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="Educational_Psychology" name="Educational Psychology" stroke="#8884d8" activeDot={{ r: 8 }} />
+                  <Line type="monotone" dataKey="Instructional_Design" name="Instructional Design" stroke="#82ca9d" />
+                  <Line type="monotone" dataKey="Curriculum_Design" name="Curriculum Design" stroke="#ffc658" />
+                  <Line type="monotone" dataKey="Learning_Design" name="Learning Design" stroke="#ff7300" />
+                  <Line type="monotone" dataKey="Distance_Learning" name="Distance Learning" stroke="#0088FE" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Key Insights</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-blue-800 mb-2">Educational Psychology Dominance</h4>
+                <p className="text-gray-700">Educational Psychology remains the most researched topic in 2024, with a focus on practical applications in teaching and learning environments.</p>
+              </div>
+              
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-green-800 mb-2">Design Thinking Integration</h4>
+                <p className="text-gray-700">There's a growing trend of integrating design thinking methodologies into higher education curriculum design, promoting creativity and problem-solving skills.</p>
+              </div>
+              
+              <div className="bg-amber-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-amber-800 mb-2">Student-Centered Approaches</h4>
+                <p className="text-gray-700">Recent research emphasizes student involvement in curriculum design, with the 'Students as Partners' approach gaining traction across disciplines.</p>
+              </div>
+              
+              <div className="bg-purple-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-purple-800 mb-2">Technology Integration</h4>
+                <p className="text-gray-700">The integration of machine learning and other technologies in design education is emerging as a significant trend to enhance student motivation and computational thinking skills.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'papers' && (
+        <div>
+          <div className="mb-6 flex flex-col md:flex-row gap-4">
+            <div className="relative flex-grow">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <input
+                type="text"
+                placeholder="Search papers by title, author, or keyword..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            
+            <div className="flex flex-wrap gap-2">
+              <select
+                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={filterYear}
+                onChange={(e) => setFilterYear(e.target.value)}
+              >
+                <option value="all">All Years</option>
+                <option value="2023">2023</option>
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+              </select>
+              
+              <select
+                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={filterTopic}
+                onChange={(e) => setFilterTopic(e.target.value)}
+              >
+                <option value="all">All Topics</option>
+                <option value="Educational Psychology">Educational Psychology</option>
+                <option value="Instructional Design">Instructional Design</option>
+                <option value="Curriculum Design">Curriculum Design</option>
+                <option value="Learning Design">Learning Design</option>
+                <option value="Distance Learning">Distance Learning</option>
+              </select>
+              
+              <select
+                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={filterSource}
+                onChange={(e) => setFilterSource(e.target.value)}
+              >
+                <option value="all">All Sources</option>
+                <option value="ResearchGate">ResearchGate</option>
+                <option value="ScienceDirect">ScienceDirect</option>
+                <option value="ERIC">ERIC</option>
+                <option value="Springer">Springer</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="bg-gray-100 p-4 rounded-md mb-4">
+            <p className="text-gray-700">
+              <strong>Found {filteredPapers.length} papers</strong> matching your criteria
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            {filteredPapers.map((paper) => (
+              <div key={paper.id} className="bg-white p-6 rounded-lg shadow-md">
+                <div className="flex justify-between items-start">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">{paper.title}</h3>
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">{paper.year}</span>
+                </div>
+                <p className="text-gray-600 mb-2">{paper.authors}</p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">{paper.topic}</span>
+                  <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded">{paper.source}</span>
+                </div>
+                
+                <div className={`transition-all duration-300 ${expandedPapers[paper.id] ? 'max-h-full' : 'max-h-24 overflow-hidden'}`}>
+                  <p className="text-gray-700 mb-4">{paper.abstract}</p>
+                  
+                  {expandedPapers[paper.id] && (
+                    <div className="mt-4">
+                      <h4 className="font-semibold text-gray-800 mb-2">Keywords:</h4>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {paper.keywords.map((keyword, idx) => (
+                          <span key={idx} className="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">{keyword}</span>
+                        ))}
+                      </div>
+                      
+                      <div className="flex items-center mt-4">
+                        <a 
+                          href={citations[paper.citationId].url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                        >
+                          <ExternalLink size={16} />
+                          View Paper
+                        </a>
+                        <CitationLink id={paper.citationId.toString()} callType="quote" citations={citations} className="ml-4 text-blue-600 hover:text-blue-800" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <button
+                  className="mt-2 text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm"
+                  onClick={() => togglePaperExpansion(paper.id)}
+                >
+                  {expandedPapers[paper.id] ? (
+                    <>
+                      <ChevronUp size={16} />
+                      Show Less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown size={16} />
+                      Show More
+                    </>
+                  )}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'topics' && (
+        <div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Research Topics Distribution</h3>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={topicData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={true}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({name, percent}) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                    >
+                      {topicData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => [`${value} papers`, 'Count']} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Top Keywords in Research</h3>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={topKeywords}
+                    layout="vertical"
+                    margin={{
+                      top: 20,
+                      right: 30,
+                      left: 120,
+                      bottom: 5,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" />
+                    <YAxis dataKey="name" type="category" width={100} />
+                    <Tooltip formatter={(value) => [`${value} occurrences`, 'Count']} />
+                    <Legend />
+                    <Bar dataKey="value" name="Occurrences" fill="#FF8042" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow mb-8">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Research Trends Over Time (2024)</h3>
+            <div className="h-96">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={trendData}
+                  margin={{
+                    top: 20,
+                    right: 30,
+                    left: 20,
+                    bottom: 5,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="Educational_Psychology" name="Educational Psychology" stroke="#8884d8" activeDot={{ r: 8 }} />
+                  <Line type="monotone" dataKey="Instructional_Design" name="Instructional Design" stroke="#82ca9d" />
+                  <Line type="monotone" dataKey="Curriculum_Design" name="Curriculum Design" stroke="#ffc658" />
+                  <Line type="monotone" dataKey="Learning_Design" name="Learning Design" stroke="#ff7300" />
+                  <Line type="monotone" dataKey="Distance_Learning" name="Distance Learning" stroke="#0088FE" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Educational Psychology</h3>
+              <p className="text-gray-700 mb-4">
+                Educational Psychology remains a dominant research area, with a focus on practical applications in teaching and learning environments. Recent papers explore the integration of psychological concepts with teaching environments, mental health support, and personalized learning approaches.
+              </p>
+              <h4 className="font-semibold text-gray-800 mb-2">Key Research Areas:</h4>
+              <ul className="list-disc pl-5 text-gray-700 mb-4">
+                <li>Application of educational psychology in practice</li>
+                <li>Mental health support for students</li>
+                <li>Learning theories and their implementation</li>
+                <li>Personalized learning approaches</li>
+                <li>Cognitive load theory and instructional design</li>
+              </ul>
+              <h4 className="font-semibold text-gray-800 mb-2">Notable Papers:</h4>
+              <ul className="list-disc pl-5 text-gray-700">
+                <li>A Study of the Application of Educational Psychology to Educational Practice <CitationLink id="1" callType="quote" citations={citations} /></li>
+                <li>Methods and Applications in Educational Psychology <CitationLink id="3" callType="quote" citations={citations} /></li>
+                <li>The Science of Reading: Contributions from Educational Psychology <CitationLink id="13" callType="quote" citations={citations} /></li>
+              </ul>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Learning Design</h3>
+              <p className="text-gray-700 mb-4">
+                Learning Design research is increasingly focusing on innovative approaches such as design-based learning, design thinking, and the integration of technology in design education. Recent papers explore how these approaches affect student motivation, creativity, and skill development.
+              </p>
+              <h4 className="font-semibold text-gray-800 mb-2">Key Research Areas:</h4>
+              <ul className="list-disc pl-5 text-gray-700 mb-4">
+                <li>Design-based learning methodologies</li>
+                <li>Design thinking in higher education</li>
+                <li>Technology integration in design education</li>
+                <li>Systems thinking in learning design</li>
+                <li>Student motivation and creativity in design education</li>
+              </ul>
+              <h4 className="font-semibold text-gray-800 mb-2">Notable Papers:</h4>
+              <ul className="list-disc pl-5 text-gray-700">
+                <li>Design-based learning in higher education: Its effects on students' motivation, creativity and design skills <CitationLink id="9" callType="quote" citations={citations} /></li>
+                <li>Teaching design students machine learning to enhance motivation for learning computational thinking skills <CitationLink id="8" callType="quote" citations={citations} /></li>
+                <li>How to set up a formal Design Thinking course that works? A practical guide for higher education settings <CitationLink id="11" callType="quote" citations={citations} /></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'authors' && (
+        <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Top Authors</h3>
+              <ul className="space-y-4">
+                <li className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-semibold mr-3">JR</div>
+                    <div>
+                      <p className="font-medium">J.R. Anderson</p>
+                      <p className="text-sm text-gray-600">Design Thinking, Higher Education</p>
+                    </div>
+                  </div>
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">2 papers</span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-800 font-semibold mr-3">JS</div>
+                    <div>
+                      <p className="font-medium">John Sweller</p>
+                      <p className="text-sm text-gray-600">Cognitive Load Theory, Instructional Design</p>
+                    </div>
+                  </div>
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">1 paper</span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-800 font-semibold mr-3">SG</div>
+                    <div>
+                      <p className="font-medium">Susan R. Goldman</p>
+                      <p className="text-sm text-gray-600">Reading Processes, Educational Psychology</p>
+                    </div>
+                  </div>
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">1 paper</span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-800 font-semibold mr-3">CH</div>
+                    <div>
+                      <p className="font-medium">Courtney Hattan</p>
+                      <p className="text-sm text-gray-600">Reading Instruction, Asset-Based Pedagogy</p>
+                    </div>
+                  </div>
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">1 paper</span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-800 font-semibold mr-3">MB</div>
+                    <div>
+                      <p className="font-medium">M. Blum</p>
+                      <p className="text-sm text-gray-600">Design Education, Machine Learning</p>
+                    </div>
+                  </div>
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">1 paper</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Top Institutions</h3>
+              <ul className="space-y-4">
+                <li className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">University of Szeged</p>
+                    <p className="text-sm text-gray-600">Hungary</p>
+                  </div>
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">2 papers</span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Escuela Superior Politecnica del Litoral</p>
+                    <p className="text-sm text-gray-600">Ecuador</p>
+                  </div>
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">1 paper</span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">University of Nottingham Malaysia</p>
+                    <p className="text-sm text-gray-600">Malaysia</p>
+                  </div>
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">1 paper</span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Sechenov First Moscow State Medical University</p>
+                    <p className="text-sm text-gray-600">Russia</p>
+                  </div>
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">1 paper</span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Taylor's University</p>
+                    <p className="text-sm text-gray-600">Malaysia</p>
+                  </div>
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">1 paper</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Collaboration Network</h3>
+              <p className="text-gray-700 mb-4">
+                Recent research in education design shows increasing international collaboration, with joint papers between institutions from different countries becoming more common.
+              </p>
+              <h4 className="font-semibold text-gray-800 mb-2">Notable Collaborations:</h4>
+              <ul className="list-disc pl-5 text-gray-700 mb-4">
+                <li>European Strategic Partnership Erasmus+ project involving nine European HEIs</li>
+                <li>Collaboration between University of Nottingham Malaysia and local pharmacy institutions</li>
+                <li>Joint research between educational psychology departments across multiple countries</li>
+              </ul>
+              <p className="text-gray-700">
+                These collaborations are particularly evident in papers focusing on curriculum design for sustainability and innovation, where diverse perspectives are valuable for developing comprehensive approaches.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow mb-8">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Research Focus by Region</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-blue-800 mb-2">Europe</h4>
+                <p className="text-gray-700 mb-2">Primary focus on competency-based curriculum design and sustainability integration in higher education.</p>
+                <p className="text-sm text-gray-600">Notable institutions: University of Szeged, European HEIs consortium</p>
+              </div>
+              
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-green-800 mb-2">Asia</h4>
+                <p className="text-gray-700 mb-2">Strong emphasis on student involvement in curriculum design and pharmacy education innovation.</p>
+                <p className="text-sm text-gray-600">Notable institutions: University of Nottingham Malaysia, Taylor's University</p>
+              </div>
+              
+              <div className="bg-amber-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-amber-800 mb-2">North America</h4>
+                <p className="text-gray-700 mb-2">Leading research in educational psychology applications and cognitive load theory.</p>
+                <p className="text-sm text-gray-600">Notable institutions: Various universities publishing in Educational Psychologist journal</p>
+              </div>
+              
+              <div className="bg-purple-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-purple-800 mb-2">South America</h4>
+                <p className="text-gray-700 mb-2">Innovative approaches to design thinking education and problem-solving skill development.</p>
+                <p className="text-sm text-gray-600">Notable institutions: Escuela Superior Politecnica del Litoral (Ecuador)</p>
+              </div>
+              
+              <div className="bg-red-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-red-800 mb-2">Middle East & Africa</h4>
+                <p className="text-gray-700 mb-2">Growing research on design-based learning and its effects on student motivation and creativity.</p>
+                <p className="text-sm text-gray-600">Notable institutions: Various collaborating universities</p>
+              </div>
+              
+              <div className="bg-indigo-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-indigo-800 mb-2">Australia & Oceania</h4>
+                <p className="text-gray-700 mb-2">Focus on systems thinking approaches to learning design and educational technology integration.</p>
+                <p className="text-sm text-gray-600">Notable institutions: Various universities collaborating on international projects</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Emerging Research Leaders</h3>
+            <p className="text-gray-700 mb-4">
+              Several researchers are emerging as leaders in specific niches within education design research:
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="border-l-4 border-blue-500 pl-4">
+                <h4 className="font-semibold text-gray-800 mb-1">J.R. Anderson</h4>
+                <p className="text-gray-700">Leading research on practical implementation of design thinking in higher education settings, with a focus on evidence-based approaches that foster problem-solving and teamwork skills.</p>
+              </div>
+              
+              <div className="border-l-4 border-green-500 pl-4">
+                <h4 className="font-semibold text-gray-800 mb-1">K. Dai & K.E. Matthews</h4>
+                <p className="text-gray-700">Pioneering work on student involvement in curriculum design, particularly in pharmacy education, with emphasis on the 'Students as Partners' approach.</p>
+              </div>
+              
+              <div className="border-l-4 border-amber-500 pl-4">
+                <h4 className="font-semibold text-gray-800 mb-1">S. Abouabdelkader et al.</h4>
+                <p className="text-gray-700">Significant contributions to understanding the effects of design-based learning on student motivation, creativity, and design skills in higher education contexts.</p>
+              </div>
+              
+              <div className="border-l-4 border-purple-500 pl-4">
+                <h4 className="font-semibold text-gray-800 mb-1">B. Quadir et al.</h4>
+                <p className="text-gray-700">Important work on integrating distance learning technologies with traditional classroom instruction, developing algorithms for creating educational programs with blended learning approaches.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="mt-8 border-t pt-6 text-sm text-gray-600">
+        <p>© 2025 Higher Education Design Research Dashboard. Last updated: May 27, 2025.</p>
+        <p className="mt-2">Data sources: ResearchGate, ScienceDirect, ERIC, Springer, and other academic repositories.</p>
+      </div>
+    </div>
+  );
+};
+
+export default HigherEducationDesignDashboard;
