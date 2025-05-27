@@ -6,45 +6,49 @@
     <title>Hierarchical Interactive Graph View</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-        body {
+        /* Ensure body and html fill the iframe's space */
+        html, body {
             margin: 0;
             padding: 0;
+            height: 100%; /* Fill the height of the iframe */
+            width: 100%;  /* Fill the width of the iframe */
             font-family: "Inter", sans-serif;
-            background-color: #f0f2f5;
+            background-color: #f0f2f5; /* Background for the content inside the iframe */
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
         }
+
         .main-wrapper {
             display: flex;
             flex-direction: column; /* Stack on small screens */
-            width: 95%;
-            max-width: 1200px; /* Overall max width for the combined layout */
+            width: 100%; /* Fill the available width from the iframe */
+            height: 100%; /* Fill the available height from the iframe */
             background-color: #ffffff;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            overflow: hidden; /* For rounded corners */
-            margin: 20px auto; /* Add margin to center it and prevent it from hugging Canvas edges */
+            overflow: hidden;
+            /* No fixed height or max-width here; let the iframe wrapper control it */
         }
 
         @media (min-width: 768px) {
             .main-wrapper {
                 flex-direction: row; /* Side-by-side on larger screens */
-                height: 70vh; /* Fixed height for consistent layout on desktop */
             }
         }
 
         .graph-container {
             flex-grow: 1; /* Takes available space */
-            aspect-ratio: 16 / 9; /* Maintain aspect ratio on smaller screens */
             position: relative;
             overflow: hidden;
+            /* No aspect-ratio here; it will fill the height provided by the flex container */
+            height: 100%; /* Fill height of main-wrapper flex item */
+            width: 100%; /* Fill width of main-wrapper flex item */
         }
         @media (min-width: 768px) {
             .graph-container {
-                aspect-ratio: auto; /* Let height be determined by flex container */
-                height: 100%; /* Fill height of main-wrapper */
+                /* On large screens, sidebar takes fixed width, graph takes remaining */
+                height: 100%;
             }
         }
 
@@ -54,19 +58,19 @@
             display: block;
         }
         .links line {
-            stroke: #ccc; /* Default link color */
+            stroke: #ccc;
             stroke-opacity: 0.6;
             stroke-width: 1.5px;
             transition: stroke-width 0.2s ease, stroke 0.2s ease, stroke-opacity 0.2s ease;
         }
         .links line.hover-active {
-            stroke: #333; /* Highlighted link color on hover */
+            stroke: #333;
             stroke-width: 2.5px;
             stroke-opacity: 1;
         }
         .links line.faded {
-            stroke-opacity: 0.1; /* Faded link opacity */
-            stroke: #eee; /* Lighter color when faded */
+            stroke-opacity: 0.1;
+            stroke: #eee;
         }
         .nodes circle {
             stroke: #fff;
@@ -78,70 +82,67 @@
             stroke-width: 3px;
         }
         .nodes circle.hover-active {
-            stroke: #3498db; /* Highlighted node stroke on hover */
+            stroke: #3498db;
             stroke-width: 3px;
             opacity: 1;
         }
         .nodes circle.selected-node {
-            stroke: #e67e22; /* Distinct color for selected node */
+            stroke: #e67e22;
             stroke-width: 4px;
             opacity: 1;
         }
         .nodes circle.faded {
-            opacity: 0.2; /* Faded node opacity */
+            opacity: 0.2;
         }
         /* Central node specific styling */
         .nodes circle.central-node {
-            r: 15px; /* Smaller radius for central node */
-            fill: #007bff; /* Distinct color for central node */
+            r: 15px; /* Radius for central node */
+            fill: #007bff;
             stroke: #0056b3;
             stroke-width: 3px;
         }
-        /* Ensure central node isn't faded by default */
         .nodes circle.central-node.faded {
-            opacity: 1; /* Central node never fades completely */
+            opacity: 1;
             stroke-opacity: 1;
         }
-        /* Ensure central node's text isn't faded by default */
         .nodes text.central-node.faded {
             opacity: 1;
         }
 
         .nodes text {
-            font-size: 12px; /* Labels a bit bigger */
+            font-size: 12px;
             fill: #333;
             pointer-events: none;
             text-anchor: middle;
             dominant-baseline: central;
-            opacity: 1; /* Labels always visible by default */
+            opacity: 1;
             transition: opacity 0.2s ease;
         }
         .nodes text.hover-active {
-            opacity: 1; /* Ensure active labels are fully visible */
+            opacity: 1;
         }
         .nodes text.selected-node {
-            opacity: 1; /* Ensure its text is fully visible */
+            opacity: 1;
         }
         .nodes text.faded {
-            opacity: 0.2; /* Faded text opacity */
+            opacity: 0.2;
         }
-        /* Style for the main group that gets transformed by zoom */
         .graph-group {
             transform-origin: center center;
         }
 
         /* Color palette for nodes */
-        .node-type-1 { fill: #66c2a5; } /* Greenish */
-        .node-type-2 { fill: #fc8d62; } /* Orangish */
-        .node-type-3 { fill: #8da0cb; } /* Purplish */
-        .node-type-4 { fill: #e78ac3; } /* Pinkish */
+        .node-type-1 { fill: #66c2a5; }
+        .node-type-2 { fill: #fc8d62; }
+        .node-type-3 { fill: #8da0cb; }
+        .node-type-4 { fill: #e78ac3; }
 
         /* Sidebar Styling */
         .sidebar {
-            width: 100%; /* Full width on small screens */
+            width: 100%;
             padding: 20px;
             box-sizing: border-box;
-            border-top: 1px solid #eee; /* Separator on small screens */
+            border-top: 1px solid #eee;
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -149,9 +150,9 @@
         @media (min-width: 768px) {
             .sidebar {
                 width: 300px; /* Fixed width on larger screens */
-                flex-shrink: 0; /* Prevent shrinking */
+                flex-shrink: 0;
                 border-top: none;
-                border-left: 1px solid #eee; /* Separator on larger screens */
+                border-left: 1px solid #eee;
             }
         }
         .sidebar h3 {
