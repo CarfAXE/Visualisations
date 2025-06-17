@@ -25,7 +25,7 @@
         }
 
         .container {
-            max-width: 1000px; /* Slightly narrower to fit Canvas typical content width */
+            max-width: 1160px; /* Increased max-width to ensure 5 buttons fit horizontally at 1200px page width */
             margin: auto;
             background: #ffffff;
             padding: 30px; /* Slightly less padding */
@@ -33,6 +33,7 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* More subtle shadow */
             width: 100%;
             box-sizing: border-box;
+            position: relative; /* Needed for z-index context, if overlay is inside */
         }
 
         /* --- Diagram Specific Styles to mimic the slide --- */
@@ -86,8 +87,7 @@
             border-radius: 0; /* No rounding for diagram cells */
             padding: 15px 10px; /* Reduced padding for more text space */
             width: auto;
-            /* height: 190px; Removed fixed height for flexibility */
-            /* min-height: 190px; Removed fixed min-height for flexibility */
+            /* Height is now flexible based on content */
             display: flex;
             flex-direction: column;
             justify-content: space-between; /* Distribute content */
@@ -122,7 +122,7 @@
             line-height: 1.3; /* Adjusted line height */
             margin: 0; /* Remove default paragraph margins */
             padding: 0; /* Remove default paragraph padding */
-            overflow: hidden; /* Ensure no text overflows */
+            overflow: hidden; /* Ensure no text overflows beyond lines */
             display: -webkit-box; /* For multi-line ellipsis */
             -webkit-line-clamp: 3; /* Limit to 3 lines */
             -webkit-box-orient: vertical;
@@ -138,70 +138,113 @@
         /* --- End Diagram Specific Styles --- */
 
 
-        /* Detail Sections */
-        .details-section {
-            background-color: #FFF8F6; /* Very light background from your palette (near E64626's light version) */
-            border: 1px solid #E64626; /* Main university color for border */
-            border-radius: 8px; /* Consistent rounded corners */
-            padding: 0px 25px; /* Reduced padding for collapsed state */
-            margin-top: 15px; /* Reduced margin top for smaller gap */
+        /* --- Overlay/Popup Styles --- */
+        .overlay {
+            position: fixed; /* Fixed to viewport */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Dark semi-transparent background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Ensure it's on top of everything */
             opacity: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: opacity 0.5s ease-in-out, max-height 0.7s ease-in-out, padding 0.5s ease-in-out; /* Slightly faster transitions */
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Subtle shadow for detail boxes */
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
         }
 
-        .details-section.active {
+        .overlay.active {
             opacity: 1;
-            max-height: 1200px; /* Increased max-height for very long content */
-            padding: 25px; /* Active padding */
+            visibility: visible;
         }
 
-        .details-section h3 {
+        .popup-wrapper {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+            width: 90%; /* Max width for popup */
+            max-width: 700px; /* Max width for consistency */
+            max-height: 90vh; /* Max height of popup, allowing scroll if content is too long */
+            overflow-y: auto; /* Enable internal scrolling for popup content */
+            padding: 20px; /* Initial padding, more added to popup-content */
+            box-sizing: border-box;
+            transform: scale(0.95); /* Slight animation on open */
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .overlay.active .popup-wrapper {
+            transform: scale(1);
+        }
+
+        .back-button {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: none;
+            border: none;
+            color: #E64626; /* University Main Color */
+            font-size: 30px; /* Large enough for easy click */
+            cursor: pointer;
+            z-index: 1001; /* Ensure button is clickable over content */
+            transition: color 0.2s ease;
+        }
+
+        .back-button:hover {
+            color: #b3391d; /* Slightly darker shade on hover */
+        }
+
+        .popup-content {
+            padding: 30px 20px 20px 20px; /* Padding inside the content area, accounting for button */
+        }
+
+        .popup-content h3 {
             color: #E64626; /* University Main Color */
             margin-top: 0;
-            margin-bottom: 12px; /* Reduced margin */
-            font-size: 1.5em; /* Adjusted font size */
+            margin-bottom: 12px;
+            font-size: 1.5em;
             font-weight: 600;
             text-align: center;
         }
 
-        .details-section h4 {
+        .popup-content h4 {
             color: #E64626; /* University Main Color */
-            margin-top: 15px; /* Reduced margin */
+            margin-top: 15px;
             margin-bottom: 6px;
-            font-size: 1.1em; /* Adjusted font size */
+            font-size: 1.1em;
             font-weight: 500;
         }
 
-        .details-section p {
-            font-size: 0.9em; /* Adjusted text size */
+        .popup-content p {
+            font-size: 0.9em;
             color: #555;
-            margin-bottom: 8px; /* Reduced margin */
+            margin-bottom: 8px;
         }
 
-        .details-section ul {
+        .popup-content ul {
             list-style-type: none;
             padding-left: 0;
-            margin-bottom: 8px; /* Reduced margin */
+            margin-bottom: 8px;
         }
 
-        .details-section li {
+        .popup-content li {
             position: relative;
-            margin-bottom: 6px; /* Reduced margin */
-            padding-left: 18px; /* Reduced padding */
+            margin-bottom: 6px;
+            padding-left: 18px;
             color: #444;
-            font-size: 0.85em; /* Adjusted text size */
+            font-size: 0.85em;
         }
 
-        .details-section li::before {
+        .popup-content li::before {
             content: '✓';
             position: absolute;
             left: 0;
             color: #E64626; /* University Main Color */
             font-weight: bold;
         }
+        /* --- End Overlay/Popup Styles --- */
 
 
         /* Responsive adjustments */
@@ -218,7 +261,7 @@
                 padding: 10px 8px;
             }
             .phase-box {
-                height: auto; /* Allow height to flex */
+                height: auto; /* Allow height to flex based on content */
                 min-height: 160px; /* Ensure minimum height */
                 padding: 12px;
             }
@@ -244,17 +287,11 @@
                 height: auto; /* Allow height to flex */
                 min-height: 130px; /* Ensure minimum height */
             }
-            .details-section {
-                padding: 15px;
+            .popup-wrapper {
+                width: 95%; /* Adjust popup width for very small screens */
             }
-            .details-section h3 {
-                font-size: 1.2em;
-            }
-            .details-section h4 {
-                font-size: 0.9em;
-            }
-            .details-section p, .details-section li {
-                font-size: 0.8em;
+            .popup-content {
+                padding: 20px 10px 10px 10px; /* Adjust popup content padding */
             }
             .material-icons {
                 font-size: 35px; /* Further adjust icon size for very small screens */
@@ -297,92 +334,113 @@
             </div>
         </div>
 
-        <!-- Detail Sections -->
-        <div id="strategy-details" class="details-section">
-            <h3>Strategy: More Details & Examples</h3>
-            <p>This phase defines the **systems** and leverages digital information's **shareable, remotely accessible, searchable, and updatable** nature to set project parameters and strategic choices efficiently.</p>
-            <h4>Examples:</h4>
-            <ul>
-                <li><strong>BIM Adoption Plan:</strong> Deciding to use BIM early for design, clash detection, and quantity take-offs; defines how **shareable** models are used.</li>
-                <li><strong>CDE Implementation:</strong> Establishing a centralized platform for all project information (documents, models, data); ensures information is **accessible remotely** and is **searchable**.</li>
-                <li><strong>Data Analytics Framework:</strong> Defining how project data (e.g., from sensors, financial systems) is collected and used; leverages **searchable** and **updatable** data for real-time insights.</li>
-                <li><strong>Digital Twin Strategy:</strong> Planning for a virtual asset replica for monitoring and simulations; relies on continuously **updatable** and **remotely accessible** digital information.</li>
-            </ul>
+        <!-- Overlay for Pop-up (Initially hidden) -->
+        <div id="overlay" class="overlay">
+            <div class="popup-wrapper">
+                <button id="backButton" class="back-button material-icons">arrow_back</button>
+                <div id="popupContent" class="popup-content">
+                    <!-- Content will be injected here by JavaScript -->
+                </div>
+            </div>
         </div>
+    </div>
 
-        <div id="procurement-details" class="details-section">
-            <h3>Procurement: More Details & Examples</h3>
-            <p>Beyond purchasing, this includes acquiring digital capabilities, licenses, and data standards. It's vital to acknowledge the influence of **global software and hardware companies** in this supply chain.</p>
-            <h4>Examples:</h4>
-            <ul>
-                <li><strong>BIM Requirements in Contracts:</strong> Mandating specific BIM model and data formats (IFC, RVT) to ensure **shareable** and **searchable** digital delivery.</li>
-                <li><strong>Software Licensing:</strong> Procuring necessary licenses for digital tools supporting the project's strategy.</li>
-                <li><strong>Data Sharing Agreements:</strong> Establishing legal frameworks for sharing, ownership, and security of digital data, leveraging its **shareable** nature while mitigating risks.</li>
-                <li><strong>Digital Maturity Assessment:</strong> Evaluating suppliers' digital infrastructure, software proficiency, and experience to ensure they can handle **remotely accessible** and **updatable** workflows.</li>
-            </ul>
-        </div>
+    <!-- Hidden templates for the detail sections - their content will be copied to the popup -->
+    <!-- Corrected template IDs to match JavaScript's expectation -->
+    <div id="strategy-details-template" class="details-template" style="display: none;">
+        <h3>Strategy: More Details & Examples</h3>
+        <p>This phase defines the **systems** and leverages digital information's **shareable, remotely accessible, searchable, and updatable** nature to set project parameters and strategic choices efficiently.</p>
+        <h4>Examples:</h4>
+        <ul>
+            <li><strong>BIM Adoption Plan:</strong> Deciding to use BIM early for design, clash detection, and quantity take-offs; defines how **shareable** models are used.</li>
+            <li><strong>CDE Implementation:</strong> Establishing a centralized platform for all project information (documents, models, data); ensures information is **accessible remotely** and is **searchable**.</li>
+            <li><strong>Data Analytics Framework:</strong> Defining how project data (e.g., from sensors, financial systems) is collected and used; leverages **searchable** and **updatable** data for real-time insights.</li>
+            <li><strong>Digital Twin Strategy:</strong> Planning for a virtual asset replica for monitoring and simulations; relies on continuously **updatable** and **remotely accessible** digital information.</li>
+        </ul>
+    </div>
 
-        <div id="onboarding-details" class="details-section">
-            <h3>Onboarding: More Details & Examples</h3>
-            <p>Familiarizing stakeholders with digital tools and standards. Critical to ensure suppliers fully grasp the **expectations and scope of digital delivery** to prevent issues related to information **shareability** and **updatability**.</p>
-            <h4>Examples:</h4>
-            <ul>
-                <li><strong>CDE Training:</strong> Hands-on workshops for team members on using the Common Data Environment; ensures consistent practices for **remotely accessible** and **searchable** information.</li>
-                <li><strong>BIM Protocol Induction:</strong> Briefing teams on BIM execution plans, naming conventions, and model schedules; sets ground rules for **shareable** digital models.</li>
-                <li><strong>Software Access:</strong> Ensuring all team members have necessary accounts and permissions for digital platforms, facilitating **remote access** to information.</li>
-                <li><strong>Digital Workflow Demos:</strong> Walking new members through workflows (e.g., RFIs via CDE); reinforces how **updatable** digital information flows.</li>
-            </ul>
-        </div>
+    <div id="procurement-details-template" class="details-template" style="display: none;">
+        <h3>Procurement: More Details & Examples</h3>
+        <p>Beyond purchasing, this includes acquiring digital capabilities, licenses, and data standards. It's vital to acknowledge the influence of **global software and hardware companies** in this supply chain.</p>
+        <h4>Examples:</h4>
+        <ul>
+            <li><strong>BIM Requirements in Contracts:</strong> Mandating specific BIM model and data formats (IFC, RVT) to ensure **shareable** and **searchable** digital delivery.</li>
+            <li><strong>Software Licensing:</strong> Procuring necessary licenses for digital tools supporting the project's strategy.</li>
+            <li><strong>Data Sharing Agreements:</strong> Establishing legal frameworks for sharing, ownership, and security of digital data, leveraging its **shareable** nature while mitigating risks.</li>
+            <li><strong>Digital Maturity Assessment:श्वरEvaluating suppliers' digital infrastructure, software proficiency, and experience to ensure they can handle **remotely accessible** and **updatable** workflows.</li>
+        </ul>
+    </div>
 
-        <div id="coordination-details" class="details-section">
-            <h3>Coordination: More Details & Examples</h3>
-            <p>Streamlines collaboration through real-time insights and automated processes, representing **systems integration**. The **shareable, remotely accessible, searchable, and updatable** characteristics of digital information are paramount here.</p>
-            <h4>Examples:</h4>
-            <ul>
-                <li><strong>Real-time Clash Detection:</strong> Using BIM software to resolve design conflicts; relies on **shareable** and **updatable** models for instant issue detection.</li>
-                <li><strong>Digital Approvals:</strong> Implementing digital sign-off processes for designs and changes; leverages **remotely accessible** and **updatable** documents.</li>
-                <li><strong>IoT Sensor Monitoring:</strong> Deploying sensors on-site for progress tracking; data feeds into **searchable** and **updatable** dashboards for immediate status.</li>
-                <li><strong>VR/AR Design Review:</strong> Using virtual/augmented reality to review 3D models; utilizes **shareable** and **remotely accessible** digital models for enhanced visualization.</li>
-                <li><strong>Recombined Data Analytics:</strong> Aggregating and linking diverse data streams to generate new analytics, leveraging the **searchable** nature of information.</li>
-            </ul>
-        </div>
+    <div id="onboarding-details-template" class="details-template" style="display: none;">
+        <h3>Onboarding: More Details & Examples</h3>
+        <p>Familiarizing stakeholders with digital tools and standards. Critical to ensure suppliers fully grasp the **expectations and scope of digital delivery** to prevent issues related to information **shareability** and **updatability**.</p>
+        <h4>Examples:</h4>
+        <ul>
+            <li><strong>CDE Training:</strong> Hands-on workshops for team members on using the Common Data Environment; ensures consistent practices for **remotely accessible** and **searchable** information.</li>
+            <li><strong>BIM Protocol Induction:</strong> Briefing teams on BIM execution plans, naming conventions, and model schedules; sets ground rules for **shareable** digital models.</li>
+            <li><strong>Software Access:</strong> Ensuring all team members have necessary accounts and permissions for digital platforms, facilitating **remote access** to information.</li>
+            <li><strong>Digital Workflow Demos:</strong> Walking new members through workflows (e.g., RFIs via CDE); reinforces how **updatable** digital information flows.</li>
+        </ul>
+    </div>
 
-        <div id="handover-details" class="details-section">
-            <h3>Handover: More Details & Examples</h3>
-            <p>Provides a comprehensive digital asset for the operational phase, crucial for **facilities and operation management**. Ensures transferred information remains **shareable, accessible remotely, searchable, and updatable** for long-term value.</p>
-            <h4>Examples:</h4>
-            <ul>
-                <li><strong>As-Built BIM Model:</strong> Final, validated BIM model representing the constructed asset; highly **searchable** and **updatable** for future modifications.</li>
-                <li><strong>Digital O&M Manuals:</strong> Structured, searchable digital O&M info integrated with CAFM systems; ensures information is **accessible remotely** and **searchable** for maintenance.</li>
-                <li><strong>Asset Information Model (AIM):</strong> Aggregates asset data throughout its lifecycle; designed to be a continually **updatable** and **searchable** source of truth.</li>
-                <li><strong>Integration with FM Systems:</strong> Seamlessly transferring digital project data (e.g., equipment schedules) into client's facility management software; ensures critical information remains **remotely accessible** and **updatable**.</li>
-            </ul>
-        </div>
+    <div id="coordination-details-template" class="details-template" style="display: none;">
+        <h3>Coordination: More Details & Examples</h3>
+        <p>Streamlines collaboration through real-time insights and automated processes, representing **systems integration**. The **shareable, remotely accessible, searchable, and updatable** characteristics of digital information are paramount here.</p>
+        <h4>Examples:</h4>
+        <ul>
+            <li><strong>Real-time Clash Detection:</strong> Using BIM software to resolve design conflicts; relies on **shareable** and **updatable** models for instant issue detection.</li>
+            <li><strong>Digital Approvals:</strong> Implementing digital sign-off processes for designs and changes; leverages **remotely accessible** and **updatable** documents.</li>
+            <li><strong>IoT Sensor Monitoring:</strong> Deploying sensors on-site for progress tracking; data feeds into **searchable** and **updatable** dashboards for immediate status.</li>
+            <li><strong>VR/AR Design Review:</b> Using virtual/augmented reality to review 3D models; utilizes **shareable** and **remotely accessible** digital models for enhanced visualization.</li>
+            <li><strong>Recombined Data Analytics:</strong> Aggregating and linking diverse data streams to generate new analytics, leveraging the **searchable** nature of information.</li>
+        </ul>
+    </div>
+
+    <div id="handover-details-template" class="details-template" style="display: none;">
+        <h3>Handover: More Details & Examples</h3>
+        <p>Provides a comprehensive digital asset for the operational phase, crucial for **facilities and operation management**. Ensures transferred information remains **shareable, accessible remotely, searchable, and updatable** for long-term value.</p>
+        <h4>Examples:</h4>
+        <ul>
+            <li><strong>As-Built BIM Model:</strong> Final, validated BIM model representing the constructed asset; highly **searchable** and **updatable** for future modifications.</li>
+            <li><strong>Digital O&M Manuals:</strong> Structured, searchable digital O&M info integrated with CAFM systems; ensures information is **accessible remotely** and **searchable** for maintenance.</li>
+            <li><strong>Asset Information Model (AIM):</strong> Aggregates asset data throughout its lifecycle; designed to be a continually **updatable** and **searchable** source of truth.</li>
+            <li><strong>Integration with FM Systems:</strong> Seamlessly transferring digital project data (e.g., equipment schedules) into client's facility management software; ensures critical information remains **remotely accessible** and **updatable**.</li>
+        </ul>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const phaseBoxes = document.querySelectorAll('.phase-box');
-            const detailsSections = document.querySelectorAll('.details-section');
+            const overlay = document.getElementById('overlay');
+            const popupContent = document.getElementById('popupContent');
+            const backButton = document.getElementById('backButton');
 
             phaseBoxes.forEach(box => {
                 box.addEventListener('click', () => {
-                    const targetId = box.id + '-details';
-                    const targetSection = document.getElementById(targetId);
+                    // Corrected targetTemplateId to match the actual IDs in HTML
+                    const targetTemplateId = box.id + '-details-template'; 
+                    const templateElement = document.getElementById(targetTemplateId); 
 
-                    // If the clicked section is currently active, close it.
-                    // Otherwise, close all other sections and open this one.
-                    if (targetSection.classList.contains('active')) {
-                        targetSection.classList.remove('active');
+                    if (templateElement) { 
+                        const templateContent = templateElement.innerHTML; 
+                        popupContent.innerHTML = templateContent; 
+                        overlay.classList.add('active'); 
                     } else {
-                        // Close all currently active detail sections
-                        detailsSections.forEach(section => {
-                            section.classList.remove('active');
-                        });
-                        // Open the target section
-                        targetSection.classList.add('active');
+                        console.error(`Error: Template with ID "${targetTemplateId}" not found.`);
                     }
                 });
+            });
+
+            backButton.addEventListener('click', () => {
+                overlay.classList.remove('active');
+                popupContent.innerHTML = ''; 
+            });
+
+            overlay.addEventListener('click', (event) => {
+                if (event.target === overlay) { 
+                    overlay.classList.remove('active');
+                    popupContent.innerHTML = '';
+                }
             });
         });
     </script>
