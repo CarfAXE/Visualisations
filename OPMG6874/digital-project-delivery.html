@@ -20,6 +20,8 @@
             align-items: flex-start;
             min-height: 100vh;
             box-sizing: border-box;
+            overflow-x: hidden; /* Prevent horizontal scroll within the interactive itself */
+            word-wrap: break-word; /* Ensure text wraps within its container */
         }
 
         .container {
@@ -62,19 +64,19 @@
 
         .full-span-banner {
             grid-column: 1 / -1;
-            background-color: #1A355E; /* Dark blue from palette, distinct from main university color */
+            background-color: #1A355E; /* Dark Blue from palette */
             font-size: 1em; /* Slightly smaller font for banners */
         }
 
         .planning-design-banner {
             grid-column: span 3;
-            background-color: #DAA8A2; /* University Main Color */
+            background-color: #DAA8A2; /* Muted Red/Pink from palette */
             font-size: 1em;
         }
 
         .delivery-banner {
             grid-column: span 2;
-            background-color: #71A499; /* University Main Color */
+            background-color: #71A499; /* Muted Green/Teal from palette */
             font-size: 1em;
         }
 
@@ -84,8 +86,8 @@
             border-radius: 0; /* No rounding for diagram cells */
             padding: 15px 10px; /* Reduced padding for more text space */
             width: auto;
-            height: 190px; /* Adjusted height to prevent cut-off text */
-            min-height: 190px; /* Ensure minimum height */
+            /* height: 190px; Removed fixed height for flexibility */
+            /* min-height: 190px; Removed fixed min-height for flexibility */
             display: flex;
             flex-direction: column;
             justify-content: space-between; /* Distribute content */
@@ -138,8 +140,8 @@
 
         /* Detail Sections */
         .details-section {
-            background-color: #fcece8; /* Light background from university palette */
-            border: 1px solid #e6a08f; /* Subtle border matching palette */
+            background-color: #FFF8F6; /* Very light background from your palette (near E64626's light version) */
+            border: 1px solid #E64626; /* Main university color for border */
             border-radius: 8px; /* Consistent rounded corners */
             padding: 0px 25px; /* Reduced padding for collapsed state */
             margin-top: 15px; /* Reduced margin top for smaller gap */
@@ -152,7 +154,7 @@
 
         .details-section.active {
             opacity: 1;
-            max-height: 700px; /* Adjusted to accommodate content */
+            max-height: 1200px; /* Increased max-height for very long content */
             padding: 25px; /* Active padding */
         }
 
@@ -216,8 +218,8 @@
                 padding: 10px 8px;
             }
             .phase-box {
-                height: auto;
-                min-height: 170px; /* Maintain a good min-height */
+                height: auto; /* Allow height to flex */
+                min-height: 160px; /* Ensure minimum height */
                 padding: 12px;
             }
             .material-icons {
@@ -239,8 +241,8 @@
                 font-size: 0.85em;
             }
             .phase-box {
-                height: auto;
-                min-height: 140px;
+                height: auto; /* Allow height to flex */
+                min-height: 130px; /* Ensure minimum height */
             }
             .details-section {
                 padding: 15px;
