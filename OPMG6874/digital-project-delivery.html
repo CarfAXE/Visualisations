@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exploring Digitally-Enabled Project Delivery</title>
+    <!-- Google Fonts - Inter for text and Material Icons for icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f7f7f7; /* Lighter background matching Canvas page */
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 1000px; /* Slightly narrower to fit Canvas typical content width */
+            margin: auto;
+            background: #ffffff;
+            padding: 30px; /* Slightly less padding */
+            border-radius: 8px; /* Softer rounded corners */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* More subtle shadow */
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* --- Diagram Specific Styles to mimic the slide --- */
+        .main-diagram-section {
+            display: grid;
+            /* 5 columns for the phase boxes */
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: auto auto auto; /* For top banner, mid banners, and phase boxes */
+            gap: 0px;
+            margin-bottom: 20px; /* Reduced gap below diagram */
+            border: 1px solid #e0e0e0; /* Lighter border matching Canvas style */
+            border-radius: 6px; /* Softer border radius */
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Very subtle shadow for diagram itself */
+        }
+
+        .diagram-cell {
+            padding: 12px 8px; /* Adjusted padding */
+            text-align: center;
+            color: white;
+            font-weight: 500; /* Slightly lighter font weight for banners */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            border-bottom: 1px solid rgba(255,255,255,0.1); /* Very subtle internal divider */
+            border-right: 1px solid rgba(255,255,255,0.1); /* Very subtle internal divider */
+        }
+
+        .full-span-banner {
+            grid-column: 1 / -1;
+            background-color: #1A355E; /* Dark blue from palette, distinct from main university color */
+            font-size: 1em; /* Slightly smaller font for banners */
+        }
+
+        .planning-design-banner {
+            grid-column: span 3;
+            background-color: #DAA8A2; /* University Main Color */
+            font-size: 1em;
+        }
+
+        .delivery-banner {
+            grid-column: span 2;
+            background-color: #71A499; /* University Main Color */
+            font-size: 1em;
+        }
+
+        .phase-box {
+            background-color: #ffffff; /* White background for phase boxes */
+            border: 1px solid #e0e0e0; /* Lighter border */
+            border-radius: 0; /* No rounding for diagram cells */
+            padding: 15px 10px; /* Reduced padding for more text space */
+            width: auto;
+            height: 190px; /* Adjusted height to prevent cut-off text */
+            min-height: 190px; /* Ensure minimum height */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Distribute content */
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out; /* Faster, smoother transition */
+            box-shadow: none;
+            color: #333;
+            font-weight: 500; /* Medium font weight for better readability */
+            box-sizing: border-box; /* Crucial for padding/border inclusion in height */
+        }
+
+        .phase-box:hover {
+            transform: translateY(-3px); /* Less dramatic lift */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* More subtle shadow on hover */
+            background-color: #f0f0f0; /* Slight hover highlight */
+            z-index: 1;
+        }
+
+        .phase-box h2 {
+            color: #34495e;
+            margin-top: 5px; /* Reduced margin */
+            margin-bottom: 5px;
+            font-size: 1.1em; /* Adjusted font size */
+            font-weight: 600;
+        }
+
+        .phase-box p {
+            font-size: 0.8em; /* Smaller description text to fit better */
+            color: #666;
+            line-height: 1.3; /* Adjusted line height */
+            margin: 0; /* Remove default paragraph margins */
+            padding: 0; /* Remove default paragraph padding */
+            overflow: hidden; /* Ensure no text overflows */
+            display: -webkit-box; /* For multi-line ellipsis */
+            -webkit-line-clamp: 3; /* Limit to 3 lines */
+            -webkit-box-orient: vertical;
+        }
+
+        /* Material Icons styling */
+        .material-icons {
+            font-size: 50px; /* Adjusted icon size */
+            color: #6c757d; /* Muted color for icons, consistent with Canvas grey text */
+            margin-bottom: 5px; /* Reduced margin */
+            display: block;
+        }
+        /* --- End Diagram Specific Styles --- */
+
+
+        /* Detail Sections */
+        .details-section {
+            background-color: #fcece8; /* Light background from university palette */
+            border: 1px solid #e6a08f; /* Subtle border matching palette */
+            border-radius: 8px; /* Consistent rounded corners */
+            padding: 0px 25px; /* Reduced padding for collapsed state */
+            margin-top: 15px; /* Reduced margin top for smaller gap */
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: opacity 0.5s ease-in-out, max-height 0.7s ease-in-out, padding 0.5s ease-in-out; /* Slightly faster transitions */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Subtle shadow for detail boxes */
+        }
+
+        .details-section.active {
+            opacity: 1;
+            max-height: 700px; /* Adjusted to accommodate content */
+            padding: 25px; /* Active padding */
+        }
+
+        .details-section h3 {
+            color: #E64626; /* University Main Color */
+            margin-top: 0;
+            margin-bottom: 12px; /* Reduced margin */
+            font-size: 1.5em; /* Adjusted font size */
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .details-section h4 {
+            color: #E64626; /* University Main Color */
+            margin-top: 15px; /* Reduced margin */
+            margin-bottom: 6px;
+            font-size: 1.1em; /* Adjusted font size */
+            font-weight: 500;
+        }
+
+        .details-section p {
+            font-size: 0.9em; /* Adjusted text size */
+            color: #555;
+            margin-bottom: 8px; /* Reduced margin */
+        }
+
+        .details-section ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin-bottom: 8px; /* Reduced margin */
+        }
+
+        .details-section li {
+            position: relative;
+            margin-bottom: 6px; /* Reduced margin */
+            padding-left: 18px; /* Reduced padding */
+            color: #444;
+            font-size: 0.85em; /* Adjusted text size */
+        }
+
+        .details-section li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #E64626; /* University Main Color */
+            font-weight: bold;
+        }
+
+
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .main-diagram-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .diagram-cell.planning-design-banner,
+            .diagram-cell.delivery-banner,
+            .diagram-cell.full-span-banner {
+                grid-column: 1 / -1; /* Spans full width on smaller screens */
+            }
+            .diagram-cell {
+                padding: 10px 8px;
+            }
+            .phase-box {
+                height: auto;
+                min-height: 170px; /* Maintain a good min-height */
+                padding: 12px;
+            }
+            .material-icons {
+                font-size: 45px; /* Adjust icon size for smaller screens */
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 15px;
+            }
+            .main-diagram-section {
+                grid-template-columns: 1fr; /* Single column on mobile */
+            }
+            .diagram-cell {
+                font-size: 0.85em;
+            }
+            .phase-box {
+                height: auto;
+                min-height: 140px;
+            }
+            .details-section {
+                padding: 15px;
+            }
+            .details-section h3 {
+                font-size: 1.2em;
+            }
+            .details-section h4 {
+                font-size: 0.9em;
+            }
+            .details-section p, .details-section li {
+                font-size: 0.8em;
+            }
+            .material-icons {
+                font-size: 35px; /* Further adjust icon size for very small screens */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-diagram-section">
+            <div class="diagram-cell full-span-banner">Digital project delivery</div>
+
+            <div class="diagram-cell planning-design-banner">Planning and design</div>
+            <div class="diagram-cell delivery-banner">Delivery</div>
+
+            <div class="diagram-cell phase-box" id="strategy">
+                <span class="material-icons">settings</span> <!-- Strategy icon -->
+                <h2>Strategy</h2>
+                <p>Digital strategy supporting project business case & delivery plan.</p>
+            </div>
+            <div class="diagram-cell phase-box" id="procurement">
+                <span class="material-icons">shopping_cart</span> <!-- Procurement icon -->
+                <h2>Procurement</h2>
+                <p>Assessing supplier digital capabilities & procuring digital assets.</p>
+            </div>
+            <div class="diagram-cell phase-box" id="onboarding">
+                <span class="material-icons">group_add</span> <!-- Onboarding icon -->
+                <h2>Onboarding</h2>
+                <p>Supplier induction on digital delivery expectations & scope.</p>
+            </div>
+            <div class="diagram-cell phase-box" id="coordination">
+                <span class="material-icons">sync</span> <!-- Coordination icon -->
+                <h2>Coordination</h2>
+                <p>Digital info for collaboration, manufacturing, verification, validation.</p>
+            </div>
+            <div class="diagram-cell phase-box" id="handover">
+                <span class="material-icons">handshake</span> <!-- Handover icon -->
+                <h2>Handover</h2>
+                <p>Digital info transfer for facilities & operation management.</p>
+            </div>
+        </div>
+
+        <!-- Detail Sections -->
+        <div id="strategy-details" class="details-section">
+            <h3>Strategy: More Details & Examples</h3>
+            <p>This phase defines the **systems** and leverages digital information's **shareable, remotely accessible, searchable, and updatable** nature to set project parameters and strategic choices efficiently.</p>
+            <h4>Examples:</h4>
+            <ul>
+                <li><strong>BIM Adoption Plan:</strong> Deciding to use BIM early for design, clash detection, and quantity take-offs; defines how **shareable** models are used.</li>
+                <li><strong>CDE Implementation:</strong> Establishing a centralized platform for all project information (documents, models, data); ensures information is **accessible remotely** and is **searchable**.</li>
+                <li><strong>Data Analytics Framework:</strong> Defining how project data (e.g., from sensors, financial systems) is collected and used; leverages **searchable** and **updatable** data for real-time insights.</li>
+                <li><strong>Digital Twin Strategy:</strong> Planning for a virtual asset replica for monitoring and simulations; relies on continuously **updatable** and **remotely accessible** digital information.</li>
+            </ul>
+        </div>
+
+        <div id="procurement-details" class="details-section">
+            <h3>Procurement: More Details & Examples</h3>
+            <p>Beyond purchasing, this includes acquiring digital capabilities, licenses, and data standards. It's vital to acknowledge the influence of **global software and hardware companies** in this supply chain.</p>
+            <h4>Examples:</h4>
+            <ul>
+                <li><strong>BIM Requirements in Contracts:</strong> Mandating specific BIM model and data formats (IFC, RVT) to ensure **shareable** and **searchable** digital delivery.</li>
+                <li><strong>Software Licensing:</strong> Procuring necessary licenses for digital tools supporting the project's strategy.</li>
+                <li><strong>Data Sharing Agreements:</strong> Establishing legal frameworks for sharing, ownership, and security of digital data, leveraging its **shareable** nature while mitigating risks.</li>
+                <li><strong>Digital Maturity Assessment:</strong> Evaluating suppliers' digital infrastructure, software proficiency, and experience to ensure they can handle **remotely accessible** and **updatable** workflows.</li>
+            </ul>
+        </div>
+
+        <div id="onboarding-details" class="details-section">
+            <h3>Onboarding: More Details & Examples</h3>
+            <p>Familiarizing stakeholders with digital tools and standards. Critical to ensure suppliers fully grasp the **expectations and scope of digital delivery** to prevent issues related to information **shareability** and **updatability**.</p>
+            <h4>Examples:</h4>
+            <ul>
+                <li><strong>CDE Training:</strong> Hands-on workshops for team members on using the Common Data Environment; ensures consistent practices for **remotely accessible** and **searchable** information.</li>
+                <li><strong>BIM Protocol Induction:</strong> Briefing teams on BIM execution plans, naming conventions, and model schedules; sets ground rules for **shareable** digital models.</li>
+                <li><strong>Software Access:</strong> Ensuring all team members have necessary accounts and permissions for digital platforms, facilitating **remote access** to information.</li>
+                <li><strong>Digital Workflow Demos:</strong> Walking new members through workflows (e.g., RFIs via CDE); reinforces how **updatable** digital information flows.</li>
+            </ul>
+        </div>
+
+        <div id="coordination-details" class="details-section">
+            <h3>Coordination: More Details & Examples</h3>
+            <p>Streamlines collaboration through real-time insights and automated processes, representing **systems integration**. The **shareable, remotely accessible, searchable, and updatable** characteristics of digital information are paramount here.</p>
+            <h4>Examples:</h4>
+            <ul>
+                <li><strong>Real-time Clash Detection:</strong> Using BIM software to resolve design conflicts; relies on **shareable** and **updatable** models for instant issue detection.</li>
+                <li><strong>Digital Approvals:</strong> Implementing digital sign-off processes for designs and changes; leverages **remotely accessible** and **updatable** documents.</li>
+                <li><strong>IoT Sensor Monitoring:</strong> Deploying sensors on-site for progress tracking; data feeds into **searchable** and **updatable** dashboards for immediate status.</li>
+                <li><strong>VR/AR Design Review:</strong> Using virtual/augmented reality to review 3D models; utilizes **shareable** and **remotely accessible** digital models for enhanced visualization.</li>
+                <li><strong>Recombined Data Analytics:</strong> Aggregating and linking diverse data streams to generate new analytics, leveraging the **searchable** nature of information.</li>
+            </ul>
+        </div>
+
+        <div id="handover-details" class="details-section">
+            <h3>Handover: More Details & Examples</h3>
+            <p>Provides a comprehensive digital asset for the operational phase, crucial for **facilities and operation management**. Ensures transferred information remains **shareable, accessible remotely, searchable, and updatable** for long-term value.</p>
+            <h4>Examples:</h4>
+            <ul>
+                <li><strong>As-Built BIM Model:</strong> Final, validated BIM model representing the constructed asset; highly **searchable** and **updatable** for future modifications.</li>
+                <li><strong>Digital O&M Manuals:</strong> Structured, searchable digital O&M info integrated with CAFM systems; ensures information is **accessible remotely** and **searchable** for maintenance.</li>
+                <li><strong>Asset Information Model (AIM):</strong> Aggregates asset data throughout its lifecycle; designed to be a continually **updatable** and **searchable** source of truth.</li>
+                <li><strong>Integration with FM Systems:</strong> Seamlessly transferring digital project data (e.g., equipment schedules) into client's facility management software; ensures critical information remains **remotely accessible** and **updatable**.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const phaseBoxes = document.querySelectorAll('.phase-box');
+            const detailsSections = document.querySelectorAll('.details-section');
+
+            phaseBoxes.forEach(box => {
+                box.addEventListener('click', () => {
+                    const targetId = box.id + '-details';
+                    const targetSection = document.getElementById(targetId);
+
+                    // If the clicked section is currently active, close it.
+                    // Otherwise, close all other sections and open this one.
+                    if (targetSection.classList.contains('active')) {
+                        targetSection.classList.remove('active');
+                    } else {
+                        // Close all currently active detail sections
+                        detailsSections.forEach(section => {
+                            section.classList.remove('active');
+                        });
+                        // Open the target section
+                        targetSection.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
